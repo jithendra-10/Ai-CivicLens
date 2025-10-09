@@ -6,6 +6,7 @@ export interface User {
   fullName: string;
   role: Role;
   photoURL?: string;
+  createdAt: string; // ISO string
 }
 
 export type Report = {

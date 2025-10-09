@@ -40,7 +40,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
 
   const handleLogout = async () => {
     await auth.signOut();
-    router.push('/');
+    router.push('/login');
   }
 
   return (
@@ -72,11 +72,9 @@ export default function SidebarNavigation({ user }: { user: User }) {
       <SidebarFooter className="p-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Log Out" onClick={handleLogout}>
-                <button className="w-full">
+              <SidebarMenuButton tooltip="Log Out" onClick={handleLogout}>
                   <LogOut />
                   <span>Log Out</span>
-                </button>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

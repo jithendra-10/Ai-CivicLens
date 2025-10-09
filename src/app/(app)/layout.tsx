@@ -1,6 +1,7 @@
 'use client';
 
-import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -8,9 +9,10 @@ import {
 } from '@/components/ui/sidebar';
 import SidebarNavigation from '@/components/layout/sidebar-nav';
 import AppHeader from '@/components/layout/header';
-import { useUser } from '@/firebase';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { User as AppUser } from '@/lib/types';
+import Loading from '@/app/loading';
 
 export default function AppLayout({
   children,
@@ -19,6 +21,13 @@ export default function AppLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
+  const firestore = useFirestore();
+
+  const userDocRef =
+    user && firestore ? doc(firestore, 'users', user.uid) : null;
+  const { data: appUser, isLoading: isAppUserLoading } =
+    useDoc<AppUser>(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -26,17 +35,20 @@ export default function AppLayout({
     }
   }, [isUserLoading, user, router]);
 
-  if (isUserLoading || !user) {
-    return <div>Loading...</div>; // Or a proper loading spinner
-  }
+  useEffect(() => {
+    if (appUser) {
+      if (appUser.role === 'citizen' && pathname.startsWith('/dashboard')) {
+        router.replace('/report');
+      }
+      if (appUser.role === 'authority' && pathname.startsWith('/report')) {
+        router.replace('/dashboard');
+      }
+    }
+  }, [appUser, pathname, router]);
 
-  // This is a placeholder for the user data structure you might have
-  const appUser = {
-    uid: user.uid,
-    fullName: user.displayName || user.email || 'Anonymous',
-    email: user.email || '',
-    role: user.isAnonymous ? 'citizen' : ('authority' as 'citizen' | 'authority'),
-  };
+  if (isUserLoading || isAppUserLoading || !appUser) {
+    return <Loading />;
+  }
 
   return (
     <SidebarProvider>
