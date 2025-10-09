@@ -96,9 +96,9 @@ export function ReportDetailsDialog({
           <div className="space-y-4">
             <div>
               <Label className="text-muted-foreground">Severity</Label>
-              <p>
+              <div className="pt-1">
                 <Badge>{report.severity}</Badge>
-              </p>
+              </div>
             </div>
             <div>
               <Label className="text-muted-foreground">AI Description</Label>
