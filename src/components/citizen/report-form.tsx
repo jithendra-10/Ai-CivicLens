@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { generateCivicIssueReport } from '@/ai/flows/generate-civic-issue-report';
 import Image from 'next/image';
-import { LoaderCircle, UploadCloud } from 'lucide-react';
+import { LoaderCircle, UploadCloud, X } from 'lucide-react';
 import { addReport } from '@/lib/actions';
 
 const reportSchema = z.object({
@@ -124,6 +124,17 @@ export function ReportForm() {
     }
   };
 
+  const removeImage = () => {
+    setImagePreview(null);
+    form.setValue('imageFile', undefined);
+    form.setValue('imageUrl', '');
+    form.setValue('issueType', '');
+    form.setValue('severity', 'Medium');
+    form.setValue('aiDescription', '');
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if(fileInput) fileInput.value = '';
+  }
+
   const onSubmit = (data: ReportFormValues) => {
     if (!data.imageUrl || !location) {
         toast({ variant: 'destructive', title: 'Missing Information', description: 'Please upload an image and ensure location is available.' });
@@ -157,21 +168,33 @@ export function ReportForm() {
         <div className="w-full">
           <FormLabel>Issue Photo</FormLabel>
           <div className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10 relative">
-            {imagePreview && (
-              <Image
-                src={imagePreview}
-                alt="Image preview"
-                layout="fill"
-                className="object-contain rounded-lg"
-              />
+            {imagePreview && !isAiLoading && (
+              <>
+                <Image
+                  src={imagePreview}
+                  alt="Image preview"
+                  fill
+                  className="object-contain rounded-lg"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-7 w-7 rounded-full z-10"
+                  onClick={removeImage}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Remove image</span>
+                </Button>
+              </>
             )}
             {isAiLoading && (
-                <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center rounded-lg">
+                <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center rounded-lg z-20">
                     <LoaderCircle className="h-12 w-12 animate-spin text-primary"/>
                     <p className="mt-4 text-sm text-muted-foreground">AI is analyzing the image...</p>
                 </div>
             )}
-            {!isAiLoading && (
+            {!imagePreview && !isAiLoading && (
                 <div className="text-center">
                 <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                 <div className="mt-4 flex text-sm leading-6 text-gray-600">
