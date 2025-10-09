@@ -112,7 +112,7 @@
     ]
   },
   "firestore": {
-    "structure": [
+     "structure": [
       {
         "path": "/users/{userId}",
         "definition": {
@@ -120,7 +120,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user data. The 'userId' parameter corresponds to the Firebase UID. Used for profile information and authentication.",
+          "description": "Stores user profile information.",
           "params": [
             {
               "name": "userId",
@@ -130,26 +130,21 @@
         }
       },
       {
-        "path": "/users/{userId}/reports/{reportId}",
+        "path": "/reports/{reportId}",
         "definition": {
           "entityName": "Report",
           "schema": {
             "$ref": "#/backend/entities/Report"
           },
-          "description": "Stores reports submitted by users. Includes denormalized 'userId' for authorization independence. This allows direct querying of a user's reports without additional lookups. The 'reportId' is an auto-generated unique identifier for each report.",
+          "description": "Stores all civic issue reports from all users.",
           "params": [
             {
-              "name": "userId",
-              "description": "The Firebase UID of the user who created the report."
-            },
-            {
               "name": "reportId",
-              "description": "Auto-generated unique identifier for the report entity."
+              "description": "Auto-generated unique identifier for the report."
             }
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, adhering to the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through denormalization. Specifically, the `reports` collection includes the `userId` field which avoids the need to fetch user roles from the `/users` collection. This denormalization allows security rules to be written without relying on `get()` calls, thus supporting atomic operations (transactions/batches). QAPs are supported by structural segregation where user generated data is segregated under the /users/{userId} path, thus preventing the need for filtering based on user ids. The membership map is not required given the requirements. This structure also maintains invariants such as ownership via path-based ownership for user reports. Timestamps are part of the schema and can be easily enforced in security rules."
+    ]
   }
 }

@@ -1,37 +1,26 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for the CivicAI application,
- *              ensuring that users can only access their own data.
- *
- * Data Structure:
- * - /users/{userId}: Stores user profiles, accessible only by the user themselves.
- * - /users/{userId}/reports/{reportId}: Stores reports submitted by users, accessible only by the user who created them.
- *
- * Key Security Decisions:
- * - Users can only create, read, update, and delete their own user documents.
- * - Users can only create, read, update, and delete their own reports.
- * - No public listing of users or reports is allowed.
- *
- * Denormalization for Authorization:
- * - The `reports` collection includes the `userId` field, which avoids the need to fetch user roles from the `/users` collection.
- *   This denormalization allows security rules to be written without relying on `get()` calls.
+ * @description This ruleset enforces a strict user-ownership model for user data and a self-creation pattern for user profiles.
+ * @dataStructure All data is nested under /users/{userId}, with reports further nested under /users/{userId}/reports/{reportId}.
+ * @keySecurityDecisions
+ *  - Users can only read and write their own profile data.
+ *  - Users can only create, read, update, and delete reports they own.
+ *  - Listing of all users is disallowed.
+ *  - An ownership field (`userId`) is denormalized onto the `Report` documents to avoid costly `get()` calls in the rules.
+ * @denormalizationForAuthorization The `Report` entity contains a `userId` field that is used to determine ownership.
+ * @structuralSegregation User-specific data (reports) is segregated under the `/users/{userId}` path.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Controls access to user profile data.
      * @path /users/{userId}
-     * @allow (create) User with matching UID can create their profile.
-     * @allow (get) User with matching UID can read their profile.
-     * @allow (update) User with matching UID can update their profile.
-     * @allow (delete) User with matching UID can delete their profile.
-     * @deny (create) User cannot create a profile with a mismatched UID.
-     * @deny (get) User cannot read another user's profile.
-     * @deny (update) User cannot update another user's profile.
-     * @deny (delete) User cannot delete another user's profile.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) A user can create their own profile if the UID matches the document ID.
+     * @allow (get, update, delete) A user can read, update, or delete their own profile.
+     * @deny (create) A user cannot create a profile with a UID that does not match their own.
+     * @deny (get, update, delete) A user cannot read, update, or delete another user's profile.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /users/{userId} {
       function isSignedIn() {
@@ -42,32 +31,24 @@ service cloud.firestore {
         return request.auth.uid == userId;
       }
 
-      function isExistingOwner(userId) {
-        return isOwner(userId) && exists(resource);
-      }
-
-      allow get: if isOwner(userId);
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Controls access to reports submitted by a user.
+     * @description Controls access to reports submitted by a specific user.
      * @path /users/{userId}/reports/{reportId}
-     * @allow (create) User with matching UID can create a report under their profile.
-     * @allow (get) User with matching UID can read their own report.
-     * @allow (update) User with matching UID can update their own report.
-     * @allow (delete) User with matching UID can delete their own report.
-     * @deny (create) User cannot create a report with a mismatched UID.
-     * @deny (get) User cannot read another user's report.
-     * @deny (update) User cannot update another user's report.
-     * @deny (delete) User cannot delete another user's report.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) A user can create a report under their own user ID, with a matching userId in the report data.
+     * @allow (get, list, update, delete) A user can read, list, update, or delete their own reports.
+     * @deny (create) A user cannot create a report under another user's ID or with a mismatched userId in the report data.
+     * @deny (get, list, update, delete) A user cannot read, list, update, or delete another user's reports.
+     * @principle Enforces document ownership for writes, restricts access to a user's own data tree, and validates relational integrity between documents.
      */
     match /users/{userId}/reports/{reportId} {
-       function isSignedIn() {
+      function isSignedIn() {
         return request.auth != null;
       }
 
@@ -76,14 +57,14 @@ service cloud.firestore {
       }
 
       function isExistingOwner(userId) {
-        return isOwner(userId) && exists(resource);
+        return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
   }
 }
