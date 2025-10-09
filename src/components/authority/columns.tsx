@@ -15,17 +15,29 @@ const severityMap: {
   };
 } = {
   High: { variant: 'destructive', className: '' },
-  Medium: { variant: 'secondary', className: 'bg-yellow-500/80 text-secondary-foreground hover:bg-yellow-500' },
-  Low: { variant: 'default', className: 'bg-green-500/80 text-primary-foreground hover:bg-green-500' },
+  Medium: {
+    variant: 'secondary',
+    className: 'bg-yellow-500/80 text-secondary-foreground hover:bg-yellow-500',
+  },
+  Low: {
+    variant: 'default',
+    className: 'bg-green-500/80 text-primary-foreground hover:bg-green-500',
+  },
+};
+
+const severityOrder: { [key in Report['severity']]: number } = {
+  Low: 1,
+  Medium: 2,
+  High: 3,
 };
 
 const statusIconMap: {
-    [key in Report['status']]: React.ReactNode;
+  [key in Report['status']]: React.ReactNode;
 } = {
-    'Submitted': <AlertCircle className="mr-2 h-4 w-4 text-blue-500" />,
-    'In Progress': <Clock className="mr-2 h-4 w-4 text-yellow-500" />,
-    'Resolved': <CheckCircle className="mr-2 h-4 w-4 text-green-500" />,
-}
+  Submitted: <AlertCircle className="mr-2 h-4 w-4 text-blue-500" />,
+  'In Progress': <Clock className="mr-2 h-4 w-4 text-yellow-500" />,
+  Resolved: <CheckCircle className="mr-2 h-4 w-4 text-green-500" />,
+};
 
 export const columns: ColumnDef<Report>[] = [
   {
@@ -51,7 +63,16 @@ export const columns: ColumnDef<Report>[] = [
     cell: ({ row }) => {
       const severity = row.getValue('severity') as Report['severity'];
       const { variant, className } = severityMap[severity];
-      return <Badge variant={variant} className={className}>{severity}</Badge>;
+      return (
+        <Badge variant={variant} className={className}>
+          {severity}
+        </Badge>
+      );
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const severityA = rowA.getValue(columnId) as Report['severity'];
+      const severityB = rowB.getValue(columnId) as Report['severity'];
+      return severityOrder[severityA] - severityOrder[severityB];
     },
   },
   {
@@ -61,13 +82,13 @@ export const columns: ColumnDef<Report>[] = [
       const status = row.getValue('status') as Report['status'];
       return (
         <div className="flex items-center">
-        {statusIconMap[status]}
-        <span>{status}</span>
+          {statusIconMap[status]}
+          <span>{status}</span>
         </div>
       );
     },
     filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id));
+      return value.includes(row.getValue(id));
     },
   },
   {
