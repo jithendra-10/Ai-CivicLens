@@ -5,9 +5,11 @@ export interface User {
   email: string;
   fullName: string;
   role: Role;
+  photoURL?: string;
 }
 
 export type Report = {
+  id?: string;
   reportId: string;
   userId: string;
   userFullName: string;

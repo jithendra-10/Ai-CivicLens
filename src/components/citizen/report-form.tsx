@@ -29,6 +29,9 @@ import Image from 'next/image';
 import { LoaderCircle, UploadCloud, X } from 'lucide-react';
 import { addReport } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase';
 
 const reportSchema = z.object({
   issueType: z.string().min(1, 'Issue type is required.'),
@@ -47,6 +50,9 @@ export function ReportForm() {
   const [isSubmitting, startTransition] = useTransition();
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
 
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
@@ -137,8 +143,8 @@ export function ReportForm() {
   }
 
   const onSubmit = (data: ReportFormValues) => {
-    if (!data.imageUrl || !location) {
-        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please upload an image and ensure location is available.' });
+    if (!data.imageUrl || !location || !user || !firestore) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please upload an image, ensure location is available, and you are logged in.' });
         return;
     }
     
@@ -150,21 +156,19 @@ export function ReportForm() {
             imageUrl: data.imageUrl,
             imageHint: 'user uploaded', // In a real app, you might generate a hint
             location: location,
+            userId: user.uid,
+            userFullName: user.displayName || 'Anonymous',
+            createdAt: new Date().toISOString(),
+            status: 'Submitted' as const,
         };
 
-        const result = await addReport(reportData);
-        if (result.success && result.newReport) {
-            // Add to localStorage
-            const existingReports = JSON.parse(localStorage.getItem('reports') || '[]');
-            localStorage.setItem('reports', JSON.stringify([result.newReport, ...existingReports]));
+        const reportsCollection = collection(firestore, 'reports');
+        addDocumentNonBlocking(reportsCollection, reportData);
 
-            toast({ title: 'Success!', description: result.message });
-            form.reset();
-            setImagePreview(null);
-            router.refresh(); // Refresh to ensure data is updated across the app
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: result.message });
-        }
+        toast({ title: 'Success!', description: "Report submitted successfully!" });
+        form.reset();
+        setImagePreview(null);
+        router.refresh();
     });
   };
 
@@ -277,7 +281,7 @@ export function ReportForm() {
           )}
         />
 
-        <Button type="submit" disabled={isAiLoading || isSubmitting} className="w-full">
+        <Button type="submit" disabled={isAiLoading || isSubmitting || !user} className="w-full">
           {isSubmitting ? <LoaderCircle className="animate-spin" /> : 'Submit Report'}
         </Button>
       </form>

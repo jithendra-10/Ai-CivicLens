@@ -13,7 +13,8 @@ export async function getReports(): Promise<Report[]> {
   // In a real app, you'd fetch this from a database.
   // We add a small delay to simulate network latency.
   await new Promise(resolve => setTimeout(resolve, 500));
-  return mockReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // This is no longer the source of truth, but we keep it for now.
+  return [];
 }
 
 export async function addReport(reportData: Omit<Report, 'reportId' | 'userId' | 'userFullName' | 'createdAt' | 'status'>): Promise<{ success: boolean, message: string, newReport?: Report }> {
@@ -21,23 +22,11 @@ export async function addReport(reportData: Omit<Report, 'reportId' | 'userId' |
   if (!user) {
     return { success: false, message: 'Authentication required.' };
   }
-
-  const newReport: Report = {
-    ...reportData,
-    reportId: `rep-${Date.now()}`, // More unique ID
-    userId: user.uid,
-    userFullName: user.fullName,
-    createdAt: new Date().toISOString(),
-    status: 'Submitted',
-  };
-
-  // We can't reliably update server-side memory in a serverless environment for this demo.
-  // So, we'll return the new report and let the client handle adding it to its state.
-  // mockReports.unshift(newReport); 
-
+  
+  // This logic is now handled on the client with Firestore
   revalidatePath('/dashboard');
 
-  return { success: true, message: 'Report submitted successfully!', newReport };
+  return { success: true, message: 'Report submitted successfully!'};
 }
 
 export async function updateReport(reportId: string, status: Report['status']): Promise<{ success: boolean, message: string }> {
@@ -46,12 +35,7 @@ export async function updateReport(reportId: string, status: Report['status']): 
         return { success: false, message: 'Unauthorized.' };
     }
 
-    const reportIndex = mockReports.findIndex(r => r.reportId === reportId);
-    if (reportIndex !== -1) {
-        mockReports[reportIndex].status = status;
-        mockReports[reportIndex].authorityId = user.uid;
-    }
-
+    // This logic is now handled on the client with Firestore
     revalidatePath('/dashboard');
     return { success: true, message: 'Report status updated.' };
 }

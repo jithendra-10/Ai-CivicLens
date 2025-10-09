@@ -22,10 +22,12 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useTransition, useState } from 'react';
-// import { updateReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 interface ReportDetailsDialogProps {
@@ -43,23 +45,25 @@ export function ReportDetailsDialog({
     const [isSubmitting, startTransition] = useTransition();
     const { toast } = useToast();
     const router = useRouter();
+    const firestore = useFirestore();
 
 
     const handleSubmit = () => {
-        startTransition(async () => {
-            // Client-side update
-            const existingReports: Report[] = JSON.parse(localStorage.getItem('reports') || '[]');
-            const reportIndex = existingReports.findIndex(r => r.reportId === report.reportId);
+        if (!report.id) {
+            toast({ variant: 'destructive', title: 'Error', description: "Report ID is missing." });
+            return;
+        }
 
-            if (reportIndex !== -1) {
-                existingReports[reportIndex].status = status;
-                localStorage.setItem('reports', JSON.stringify(existingReports));
-                toast({ title: 'Success', description: "Report status updated." });
-                setIsOpen(false);
-                router.refresh(); // This will re-fetch server components and trigger re-render in client ones
-            } else {
-                 toast({ variant: 'destructive', title: 'Error', description: "Report not found." });
+        startTransition(async () => {
+            if (!firestore) {
+                toast({ variant: 'destructive', title: 'Error', description: "Firestore not available." });
+                return;
             }
+            const reportRef = doc(firestore, 'reports', report.id);
+            updateDocumentNonBlocking(reportRef, { status });
+            toast({ title: 'Success', description: "Report status updated." });
+            setIsOpen(false);
+            router.refresh();
         });
     }
 
@@ -71,7 +75,7 @@ export function ReportDetailsDialog({
             Report Details: {report.issueType}
           </DialogTitle>
           <DialogDescription>
-            Report ID: {report.reportId}
+            Report ID: {report.id}
           </DialogDescription>
         </DialogHeader>
         <div className="grid md:grid-cols-2 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">

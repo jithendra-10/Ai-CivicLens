@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/components/auth/auth-provider';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { DM_Sans as FontHeadline } from 'next/font/google';
+import { FirebaseClientProvider } from '@/firebase';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -35,10 +35,10 @@ export default function RootLayout({
           fontSans.variable,
           fontHeadline.variable
         )}>
-        <AuthProvider>
+        <FirebaseClientProvider>
           {children}
           <Toaster />
-        </AuthProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

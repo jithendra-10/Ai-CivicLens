@@ -1,9 +1,6 @@
-import { getReports } from '@/lib/actions';
 import { DashboardClient } from '@/components/authority/dashboard-client';
 
 export default async function DashboardPage() {
-  const reports = await getReports();
-
   return (
     <div className="container mx-auto">
       <div className="mb-8">
@@ -12,7 +9,7 @@ export default async function DashboardPage() {
           View, manage, and resolve civic issues reported by citizens.
         </p>
       </div>
-      <DashboardClient initialReports={reports} />
+      <DashboardClient />
     </div>
   );
 }

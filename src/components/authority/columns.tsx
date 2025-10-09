@@ -40,6 +40,13 @@ const statusIconMap: {
 };
 
 export const columns: ColumnDef<Report>[] = [
+    {
+    accessorKey: 'reportId',
+    header: 'ID',
+    cell: ({ row }) => (
+      <div className="truncate w-20">{row.original.id}</div>
+    )
+    },
   {
     accessorKey: 'issueType',
     header: 'Issue Type',

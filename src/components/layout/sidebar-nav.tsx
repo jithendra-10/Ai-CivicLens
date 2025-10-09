@@ -18,11 +18,13 @@ import {
 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { logout } from '@/app/login/actions';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
 
 export default function SidebarNavigation({ user }: { user: User }) {
   const pathname = usePathname();
+  const auth = useAuth();
+  const router = useRouter();
 
   const citizenNav = [
     { href: '/report', label: 'New Report', icon: FilePlus2 },
@@ -35,6 +37,11 @@ export default function SidebarNavigation({ user }: { user: User }) {
   ];
 
   const navItems = user.role === 'citizen' ? citizenNav : authorityNav;
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/');
+  }
 
   return (
     <>
@@ -63,18 +70,16 @@ export default function SidebarNavigation({ user }: { user: User }) {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2">
-        <form action={logout}>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Log Out">
-                <button type="submit" className="w-full">
+              <SidebarMenuButton asChild tooltip="Log Out" onClick={handleLogout}>
+                <button className="w-full">
                   <LogOut />
                   <span>Log Out</span>
                 </button>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-        </form>
       </SidebarFooter>
     </>
   );

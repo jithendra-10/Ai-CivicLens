@@ -1,4 +1,5 @@
-import { login } from '@/app/login/actions';
+'use client';
+
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,10 +9,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/firebase';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleCitizenLogin = () => {
+    initiateAnonymousSignIn(auth);
+    router.push('/report');
+  };
+
+  const handleAuthorityLogin = () => {
+    // For now, we'll use anonymous auth for both.
+    // In a real app, this would be a proper email/password login.
+    initiateAnonymousSignIn(auth);
+    router.push('/dashboard');
+  };
+
+
   return (
     <div className="w-full min-h-screen flex items-center justify-center py-12 bg-muted">
       <div className="mx-auto grid w-[350px] gap-6">
@@ -32,29 +51,21 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="grid gap-4">
+            <div className="grid gap-4">
               <Button
-                type="submit"
+                onClick={handleCitizenLogin}
                 className="w-full"
-                formAction={async () => {
-                  'use server';
-                  await login('citizen');
-                }}
               >
                 Login as Citizen
               </Button>
               <Button
                 variant="secondary"
-                type="submit"
+                onClick={handleAuthorityLogin}
                 className="w-full"
-                formAction={async () => {
-                  'use server';
-                  await login('authority');
-                }}
               >
                 Login as Authority
               </Button>
-            </form>
+            </div>
           </CardContent>
         </Card>
         <div className="mt-4 text-center text-sm">
