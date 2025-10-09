@@ -49,19 +49,30 @@ export default function AppLayout({
     }
   }, [appUser, pathname, router]);
 
-  if (isUserLoading || isAppUserLoading || !appUser) {
+  if (isUserLoading || (user && isAppUserLoading) || (user && !appUser)) {
     return <Loading />;
   }
 
-  return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarNavigation user={appUser} />
-      </Sidebar>
-      <SidebarInset>
-        <AppHeader />
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+  if (!user) {
+    // This can happen briefly during the redirect. Showing a loader is better than a flash of content.
+    return <Loading />;
+  }
+
+  // Only render the layout if we have the appUser
+  if (appUser) {
+    return (
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarNavigation user={appUser} />
+        </Sidebar>
+        <SidebarInset>
+          <AppHeader />
+          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+  
+  // Fallback, in case something unexpected happens
+  return <Loading />;
 }
