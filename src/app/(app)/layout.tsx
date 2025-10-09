@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/sidebar';
 import SidebarNavigation from '@/components/layout/sidebar-nav';
 import AppHeader from '@/components/layout/header';
-import { useUser, useDoc, useFirestore } from '@/firebase';
+import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as AppUser } from '@/lib/types';
 import Loading from '@/app/loading';
@@ -24,8 +24,11 @@ export default function AppLayout({
   const pathname = usePathname();
   const firestore = useFirestore();
 
-  const userDocRef =
-    user && firestore ? doc(firestore, 'users', user.uid) : null;
+  const userDocRef = useMemoFirebase(
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  
   const { data: appUser, isLoading: isAppUserLoading } =
     useDoc<AppUser>(userDocRef);
 
