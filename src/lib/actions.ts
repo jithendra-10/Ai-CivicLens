@@ -5,6 +5,8 @@ import { reports as initialReports, users } from './data';
 import type { Report } from './types';
 import { getCurrentUser } from './auth';
 
+// This is a server-side in-memory store. It's not suitable for production.
+// In a real app, this would be a database.
 let mockReports: Report[] = [...initialReports];
 
 export async function getReports(): Promise<Report[]> {
@@ -14,26 +16,28 @@ export async function getReports(): Promise<Report[]> {
   return mockReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export async function addReport(data: Omit<Report, 'reportId' | 'userId' | 'userFullName' | 'createdAt' | 'status'>): Promise<{ success: boolean, message: string }> {
+export async function addReport(reportData: Omit<Report, 'reportId' | 'userId' | 'userFullName' | 'createdAt' | 'status'>): Promise<{ success: boolean, message: string, newReport?: Report }> {
   const user = await getCurrentUser();
   if (!user) {
     return { success: false, message: 'Authentication required.' };
   }
 
   const newReport: Report = {
-    ...data,
-    reportId: `rep-${String(mockReports.length + 1).padStart(3, '0')}`,
+    ...reportData,
+    reportId: `rep-${Date.now()}`, // More unique ID
     userId: user.uid,
     userFullName: user.fullName,
     createdAt: new Date().toISOString(),
     status: 'Submitted',
   };
 
-  mockReports.unshift(newReport);
-  revalidatePath('/dashboard');
-  revalidatePath('/report');
+  // We can't reliably update server-side memory in a serverless environment for this demo.
+  // So, we'll return the new report and let the client handle adding it to its state.
+  // mockReports.unshift(newReport); 
 
-  return { success: true, message: 'Report submitted successfully!' };
+  revalidatePath('/dashboard');
+
+  return { success: true, message: 'Report submitted successfully!', newReport };
 }
 
 export async function updateReport(reportId: string, status: Report['status']): Promise<{ success: boolean, message: string }> {
@@ -43,15 +47,10 @@ export async function updateReport(reportId: string, status: Report['status']): 
     }
 
     const reportIndex = mockReports.findIndex(r => r.reportId === reportId);
-    if (reportIndex === -1) {
-        return { success: false, message: 'Report not found.' };
+    if (reportIndex !== -1) {
+        mockReports[reportIndex].status = status;
+        mockReports[reportIndex].authorityId = user.uid;
     }
-
-    mockReports[reportIndex] = {
-        ...mockReports[reportIndex],
-        status,
-        authorityId: user.uid,
-    };
 
     revalidatePath('/dashboard');
     return { success: true, message: 'Report status updated.' };

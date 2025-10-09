@@ -22,9 +22,11 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useTransition, useState } from 'react';
-import { updateReport } from '@/lib/actions';
+// import { updateReport } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 interface ReportDetailsDialogProps {
   report: Report;
@@ -40,17 +42,23 @@ export function ReportDetailsDialog({
     const [status, setStatus] = useState(report.status);
     const [isSubmitting, startTransition] = useTransition();
     const { toast } = useToast();
+    const router = useRouter();
+
 
     const handleSubmit = () => {
         startTransition(async () => {
-            const result = await updateReport(report.reportId, status);
-            if (result.success) {
-                toast({ title: 'Success', description: result.message });
-                // Manually update the report in the parent state if needed, or rely on revalidation
-                // For now, we close the dialog and let revalidation handle the update.
+            // Client-side update
+            const existingReports: Report[] = JSON.parse(localStorage.getItem('reports') || '[]');
+            const reportIndex = existingReports.findIndex(r => r.reportId === report.reportId);
+
+            if (reportIndex !== -1) {
+                existingReports[reportIndex].status = status;
+                localStorage.setItem('reports', JSON.stringify(existingReports));
+                toast({ title: 'Success', description: "Report status updated." });
                 setIsOpen(false);
+                router.refresh(); // This will re-fetch server components and trigger re-render in client ones
             } else {
-                toast({ variant: 'destructive', title: 'Error', description: result.message });
+                 toast({ variant: 'destructive', title: 'Error', description: "Report not found." });
             }
         });
     }

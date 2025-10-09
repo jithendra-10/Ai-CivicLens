@@ -28,6 +28,7 @@ import { generateCivicIssueReport } from '@/ai/flows/generate-civic-issue-report
 import Image from 'next/image';
 import { LoaderCircle, UploadCloud, X } from 'lucide-react';
 import { addReport } from '@/lib/actions';
+import { useRouter } from 'next/navigation';
 
 const reportSchema = z.object({
   issueType: z.string().min(1, 'Issue type is required.'),
@@ -44,7 +45,7 @@ export function ReportForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, startTransition] = useTransition();
-
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<ReportFormValues>({
@@ -152,10 +153,15 @@ export function ReportForm() {
         };
 
         const result = await addReport(reportData);
-        if (result.success) {
+        if (result.success && result.newReport) {
+            // Add to localStorage
+            const existingReports = JSON.parse(localStorage.getItem('reports') || '[]');
+            localStorage.setItem('reports', JSON.stringify([result.newReport, ...existingReports]));
+
             toast({ title: 'Success!', description: result.message });
             form.reset();
             setImagePreview(null);
+            router.refresh(); // Refresh to ensure data is updated across the app
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.message });
         }
