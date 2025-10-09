@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CivicAI system, either a citizen or an authority.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase UID - Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "role": {
+          "type": "string",
+          "description": "User's role within the system ('citizen' or 'authority')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the user was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "fullName",
+        "role",
+        "createdAt"
+      ]
+    },
+    "Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Report",
+      "type": "object",
+      "description": "Represents a civic issue report submitted by a citizen.",
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "description": "Auto-generated unique identifier for the report entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Report)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image uploaded by the citizen, stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "issueType": {
+          "type": "string",
+          "description": "Type of civic issue reported (e.g., 'Pothole', 'Garbage')."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the reported issue ('Low', 'Medium', 'High')."
+        },
+        "aiDescription": {
+          "type": "string",
+          "description": "AI-generated summary of the issue."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the report ('Submitted', 'In Progress', 'Resolved')."
+        },
+        "authorityId": {
+          "type": "string",
+          "description": "Reference to User (Authority). (Relationship: User 1:N Report - resolved by)"
+        },
+        "resolvedImage": {
+          "type": "string",
+          "description": "URL of the image uploaded by the authority as proof of resolution, stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "location": {
+          "type": "string",
+          "description": "location object of the report",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the report was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "reportId",
+        "userId",
+        "imageUrl",
+        "issueType",
+        "severity",
+        "aiDescription",
+        "status",
+        "location",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data. The 'userId' parameter corresponds to the Firebase UID. Used for profile information and authentication.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": {
+            "$ref": "#/backend/entities/Report"
+          },
+          "description": "Stores reports submitted by users. Includes denormalized 'userId' for authorization independence. This allows direct querying of a user's reports without additional lookups. The 'reportId' is an auto-generated unique identifier for each report.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the user who created the report."
+            },
+            {
+              "name": "reportId",
+              "description": "Auto-generated unique identifier for the report entity."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, adhering to the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through denormalization. Specifically, the `reports` collection includes the `userId` field which avoids the need to fetch user roles from the `/users` collection. This denormalization allows security rules to be written without relying on `get()` calls, thus supporting atomic operations (transactions/batches). QAPs are supported by structural segregation where user generated data is segregated under the /users/{userId} path, thus preventing the need for filtering based on user ids. The membership map is not required given the requirements. This structure also maintains invariants such as ownership via path-based ownership for user reports. Timestamps are part of the schema and can be easily enforced in security rules."
+  }
+}

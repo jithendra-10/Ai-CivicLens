@@ -1,0 +1,89 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for the CivicAI application,
+ *              ensuring that users can only access their own data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles, accessible only by the user themselves.
+ * - /users/{userId}/reports/{reportId}: Stores reports submitted by users, accessible only by the user who created them.
+ *
+ * Key Security Decisions:
+ * - Users can only create, read, update, and delete their own user documents.
+ * - Users can only create, read, update, and delete their own reports.
+ * - No public listing of users or reports is allowed.
+ *
+ * Denormalization for Authorization:
+ * - The `reports` collection includes the `userId` field, which avoids the need to fetch user roles from the `/users` collection.
+ *   This denormalization allows security rules to be written without relying on `get()` calls.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) User with matching UID can create their profile.
+     * @allow (get) User with matching UID can read their profile.
+     * @allow (update) User with matching UID can update their profile.
+     * @allow (delete) User with matching UID can delete their profile.
+     * @deny (create) User cannot create a profile with a mismatched UID.
+     * @deny (get) User cannot read another user's profile.
+     * @deny (update) User cannot update another user's profile.
+     * @deny (delete) User cannot delete another user's profile.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && exists(resource);
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to reports submitted by a user.
+     * @path /users/{userId}/reports/{reportId}
+     * @allow (create) User with matching UID can create a report under their profile.
+     * @allow (get) User with matching UID can read their own report.
+     * @allow (update) User with matching UID can update their own report.
+     * @allow (delete) User with matching UID can delete their own report.
+     * @deny (create) User cannot create a report with a mismatched UID.
+     * @deny (get) User cannot read another user's report.
+     * @deny (update) User cannot update another user's report.
+     * @deny (delete) User cannot delete another user's report.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/reports/{reportId} {
+       function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && exists(resource);
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
