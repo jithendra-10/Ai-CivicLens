@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A modern city skyline at dusk, representing a well-managed urban environment.",
+      "imageUrl": "https://picsum.photos/seed/city-hero/1200/1800",
+      "imageHint": "city skyline"
+    },
+    {
+      "id": "pothole-1",
+      "description": "A large pothole on a residential street.",
+      "imageUrl": "https://picsum.photos/seed/pothole1/400/300",
+      "imageHint": "road pothole"
+    },
+    {
+      "id": "graffiti-1",
+      "description": "Graffiti spray-painted on a brick wall.",
+      "imageUrl": "https://picsum.photos/seed/graffiti1/400/300",
+      "imageHint": "wall graffiti"
+    },
+    {
+      "id": "garbage-1",
+      "description": "An overflowing public garbage can.",
+      "imageUrl": "https://picsum.photos/seed/garbage1/400/300",
+      "imageHint": "overflowing trash"
+    },
+    {
+      "id": "streetlight-1",
+      "description": "A broken streetlight that is not turning on at night.",
+      "imageUrl": "https://picsum.photos/seed/light1/400/300",
+      "imageHint": "broken streetlight"
+    },
+    {
+      "id": "pothole-resolved",
+      "description": "A freshly patched pothole on a road.",
+      "imageUrl": "https://picsum.photos/seed/pothole-resolved/400/300",
+      "imageHint": "fixed road"
+    }
+  ]
 }
