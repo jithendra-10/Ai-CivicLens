@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import { Button } from '../ui/button';
 import { ArrowUpDown, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { SafeDate } from './safe-date';
 
 const severityMap: {
   [key in Report['severity']]: {
@@ -74,11 +74,8 @@ export const columns: ColumnDef<Report>[] = [
     accessorKey: 'createdAt',
     header: 'Reported On',
     cell: ({ row }) => {
-      return (
-        <div className="text-sm text-muted-foreground">
-          {format(new Date(row.getValue('createdAt')), 'MMM d, yyyy')}
-        </div>
-      );
+      const dateValue = row.getValue('createdAt') as string;
+      return <SafeDate dateString={dateValue} />;
     },
   },
   {
