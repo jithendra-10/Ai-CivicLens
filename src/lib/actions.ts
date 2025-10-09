@@ -1,11 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { reports, users } from './data';
+import { reports as initialReports, users } from './data';
 import type { Report } from './types';
 import { getCurrentUser } from './auth';
 
-let mockReports: Report[] = [...reports];
+let mockReports: Report[] = [...initialReports];
 
 export async function getReports(): Promise<Report[]> {
   // In a real app, you'd fetch this from a database.
@@ -36,7 +36,7 @@ export async function addReport(data: Omit<Report, 'reportId' | 'userId' | 'user
   return { success: true, message: 'Report submitted successfully!' };
 }
 
-export async function updateReport(reportId: string, status: 'In Progress' | 'Resolved', resolvedImageUrl?: string, resolvedImageHint?: string): Promise<{ success: boolean, message: string }> {
+export async function updateReport(reportId: string, status: Report['status']): Promise<{ success: boolean, message: string }> {
     const user = await getCurrentUser();
     if (!user || user.role !== 'authority') {
         return { success: false, message: 'Unauthorized.' };
@@ -50,8 +50,6 @@ export async function updateReport(reportId: string, status: 'In Progress' | 'Re
     mockReports[reportIndex] = {
         ...mockReports[reportIndex],
         status,
-        resolvedImageUrl: resolvedImageUrl ?? mockReports[reportIndex].resolvedImageUrl,
-        resolvedImageHint: resolvedImageHint ?? mockReports[reportIndex].resolvedImageHint,
         authorityId: user.uid,
     };
 

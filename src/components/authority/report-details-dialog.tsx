@@ -46,6 +46,8 @@ export function ReportDetailsDialog({
             const result = await updateReport(report.reportId, status);
             if (result.success) {
                 toast({ title: 'Success', description: result.message });
+                // Manually update the report in the parent state if needed, or rely on revalidation
+                // For now, we close the dialog and let revalidation handle the update.
                 setIsOpen(false);
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.message });
@@ -72,7 +74,7 @@ export function ReportDetailsDialog({
                 <Image
                   src={report.imageUrl}
                   alt={report.aiDescription}
-                  layout="fill"
+                  fill
                   className="rounded-md object-cover"
                   data-ai-hint={report.imageHint}
                 />
@@ -85,7 +87,7 @@ export function ReportDetailsDialog({
                         <Image
                         src={report.resolvedImageUrl}
                         alt="Resolution image"
-                        layout="fill"
+                        fill
                         className="rounded-md object-cover"
                         data-ai-hint={report.resolvedImageHint}
                         />
