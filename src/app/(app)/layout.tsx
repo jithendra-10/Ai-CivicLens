@@ -1,3 +1,5 @@
+'use client';
+
 import { redirect } from 'next/navigation';
 import {
   SidebarProvider,
@@ -7,6 +9,8 @@ import {
 import SidebarNavigation from '@/components/layout/sidebar-nav';
 import AppHeader from '@/components/layout/header';
 import { useUser } from '@/firebase';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AppLayout({
   children,
@@ -14,13 +18,16 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
-  if (isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [isUserLoading, user, router]);
+
+  if (isUserLoading || !user) {
     return <div>Loading...</div>; // Or a proper loading spinner
-  }
-
-  if (!user) {
-    redirect('/login');
   }
 
   // This is a placeholder for the user data structure you might have
@@ -28,8 +35,8 @@ export default function AppLayout({
     uid: user.uid,
     fullName: user.displayName || user.email || 'Anonymous',
     email: user.email || '',
-    role: user.isAnonymous ? 'citizen' : 'authority' as 'citizen' | 'authority',
-  }
+    role: user.isAnonymous ? 'citizen' : ('authority' as 'citizen' | 'authority'),
+  };
 
   return (
     <SidebarProvider>
