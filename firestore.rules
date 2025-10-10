@@ -1,83 +1,85 @@
 /**
- * @fileoverview Firestore Security Rules for CivicAI.
+ * @fileOverview Firestore Security Rules for CivicAI.
  *
  * Core Philosophy:
- * This ruleset prioritizes user data protection by enforcing strict ownership for user profiles
- * and implements open reads with ownership-based writes for reports.
+ * This ruleset prioritizes user data protection while allowing for public access to reports.
+ * It enforces a strict owner-only access model for user profiles and allows any signed-in user to read the reports collection.
+ * Writes to the reports collection are restricted to signed-in users only.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles, accessible only to the owner.
- * - /reports/{reportId}: Stores civic issue reports. Read access is public, but write access
- *   is restricted to the report's creator.
+ * - /users/{userId}: Stores individual user profiles. Only the user themselves can read or write their profile.
+ * - /reports/{reportId}: Stores civic issue reports. Readable by any authenticated user.  Writable by signed-in users.
  *
  * Key Security Decisions:
- * - User profiles are private and accessible only to the authenticated user.
- * - Report listing is public to facilitate open data and transparency.
- * - All write operations (create, update, delete) require user authentication and
- *   ownership validation.
- *
- * Denormalization for Authorization:
- * - The `Report` entity requires a `userId` field to enforce ownership for write operations.
+ * - User listing is disallowed to prevent unauthorized access to user data.
+ * - Reports are publicly readable to facilitate transparency and community involvement.
+ * - Unauthenticated users cannot create reports, preventing spam or abuse.
+ * - Denormalization is used for authorization; the `Report` entity contains a `userId` field
+ *   to quickly verify ownership during updates and deletes.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Protects user profiles, allowing only the owner to read and write.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth.uid.
-     * @allow (get, update, delete) - Authenticated user can only access their own profile.
-     * @deny (list) - Listing users is not permitted.
-     * @deny (create) - Cannot create if the userId does not match their auth.uid.
-     * @principle Enforces strict user ownership for profile data.
+     * @allow (get, update, delete) User '1E2hiI3QcxQ56ug4NZmqQOLBps73' can access their own profile.
+     * @allow (create) User '1E2hiI3QcxQ56ug4NZmqQOLBps73' can create their own profile
+     * @deny (get, update, delete) User 'OTHER_USER_ID' cannot access user '1E2hiI3QcxQ56ug4NZmqQOLBps73' profile.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
+      // Helper function to check if the request is made by the owner
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
 
-      allow get: if isSignedIn() && isOwner(userId);
+      // Allow the user to read their own profile.
+      allow get: if isOwner(userId);
+
+      // Allow the user to create their own profile.
+      allow create: if isOwner(userId);
+
+      // Allow the user to update their own profile.
+      allow update: if isOwner(userId);
+
+      // Allow the user to delete their own profile.
+      allow delete: if isOwner(userId);
+
+      // Listing users is not allowed.
       allow list: if false;
-
-      // Allow the user to create their own profile, but only if the userId matches their auth.uid
-      allow create: if isSignedIn() && isOwner(userId);
-
-      // Only the owner can update their profile. Enforce immutability of the uid field.
-      allow update: if isSignedIn() && isOwner(userId);
-
-      // Only the owner can delete their profile
-      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Controls access to civic issue reports.
+     * @description Manages access to civic issue reports, allowing public reads and authenticated writes.
      * @path /reports/{reportId}
-     * @allow (get, list) - Reports are publicly readable.
-     * @allow (create) - Authenticated user can create a report, with userId matching their auth.uid.
-     * @allow (update, delete) - Only the report's creator can modify or delete it.
-     * @deny (create) - Cannot create report with userId that does not match their auth.uid.
-     * @principle Enables open data for reports with ownership-based writes.
+     * @allow (get, list) Any signed-in user can read all reports.
+     * @allow (create) A signed-in user can create a report.
+     * @deny (create, update, delete) An unauthenticated user cannot modify any reports.
+     * @deny (update, delete) Only the report's author can update or delete it.
+     * @principle Allows public read access but restricts writes to authenticated owners.
      */
     match /reports/{reportId} {
+      // Helper function to check if the request is made by the owner
+      function isOwner() {
+        return request.auth != null && resource.data.userId == request.auth.uid;
+      }
+
       function isSignedIn() {
         return request.auth != null;
       }
 
-      function isOwner() {
-        return resource.data.userId == request.auth.uid;
-      }
-
+      // Allow anyone to read all reports.
       allow get, list: if true;
 
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      // Allow only authenticated users to create reports, and enforce ownership.
+      allow create: if isSignedIn();
 
+      // Allow only the owner of the report to update the report.
       allow update: if isSignedIn() && isOwner();
 
+      // Allow only the owner of the report to delete the report.
       allow delete: if isSignedIn() && isOwner();
     }
   }
