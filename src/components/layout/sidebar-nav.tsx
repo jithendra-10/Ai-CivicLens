@@ -28,7 +28,6 @@ export default function SidebarNavigation({ user }: { user: User }) {
 
   const citizenNav = [
     { href: '/report', label: 'New Report', icon: FilePlus2 },
-    { href: '/my-reports', label: 'My Reports', icon: ListOrdered },
   ];
 
   const authorityNav = [
