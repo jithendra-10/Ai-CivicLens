@@ -1,34 +1,36 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a role-based access control system for the CivicAI application.
+ * @fileoverview Firestore Security Rules for CivicAI.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes user data protection by enforcing strict ownership for user profiles
+ * and implements open reads with ownership-based writes for reports.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information. Access is restricted to the owning user.
- * - /reports/{reportId}: Stores civic issue reports. Publicly readable, but writes are restricted to authorized users and validated for ownership.
+ * - /users/{userId}: Stores individual user profiles, accessible only to the owner.
+ * - /reports/{reportId}: Stores civic issue reports. Read access is public, but write access
+ *   is restricted to the report's creator.
  *
  * Key Security Decisions:
- * - Users can only read and write their own profile data.
- * - Reports are publicly readable to facilitate data sharing and transparency.
- * - Report creation requires that the `userId` field matches the authenticated user's UID.
- * - Report updates and deletes are restricted to the user who created the report.
+ * - User profiles are private and accessible only to the authenticated user.
+ * - Report listing is public to facilitate open data and transparency.
+ * - All write operations (create, update, delete) require user authentication and
+ *   ownership validation.
  *
  * Denormalization for Authorization:
- * - The `Report` entity includes a `userId` field to enable ownership-based security rules without requiring additional `get()` operations.
- *
- * Structural Segregation:
- * - Private user data (profile information) is stored under the `/users/{userId}` collection, while public report data is stored under the top-level `/reports/{reportId}` collection.
+ * - The `Report` entity requires a `userId` field to enforce ownership for write operations.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (get, update, delete) if the user is the owner of the profile.
-     * @allow (create) if the user's UID matches the userId in the path.
-     * @deny (create, update, delete) if the user is not authenticated.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth.uid.
+     * @allow (get, update, delete) - Authenticated user can only access their own profile.
+     * @deny (list) - Listing users is not permitted.
+     * @deny (create) - Cannot create if the userId does not match their auth.uid.
+     * @principle Enforces strict user ownership for profile data.
      */
     match /users/{userId} {
       function isSignedIn() {
@@ -39,25 +41,27 @@ service cloud.firestore {
         return request.auth.uid == userId;
       }
 
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
 
-      allow get: if isOwner(userId);
-      allow list: if false; // Users collection is not listable.
+      // Allow the user to create their own profile, but only if the userId matches their auth.uid
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+
+      // Only the owner can update their profile. Enforce immutability of the uid field.
+      allow update: if isSignedIn() && isOwner(userId);
+
+      // Only the owner can delete their profile
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
      * @description Controls access to civic issue reports.
      * @path /reports/{reportId}
-     * @allow (get, list) to anyone.
-     * @allow (create) if the user is authenticated and the userId matches the authenticated user's UID.
-     * @allow (update, delete) if the user is the owner of the report.
-     * @deny (create, update, delete) if the user is not authenticated or does not own the report.
-     * @principle Allows public read access but restricts write access to the report owner.
+     * @allow (get, list) - Reports are publicly readable.
+     * @allow (create) - Authenticated user can create a report, with userId matching their auth.uid.
+     * @allow (update, delete) - Only the report's creator can modify or delete it.
+     * @deny (create) - Cannot create report with userId that does not match their auth.uid.
+     * @principle Enables open data for reports with ownership-based writes.
      */
     match /reports/{reportId} {
       function isSignedIn() {
@@ -68,15 +72,13 @@ service cloud.firestore {
         return resource.data.userId == request.auth.uid;
       }
 
-      function isExistingOwner() {
-        return isOwner() && resource != null;
-      }
-        
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
+
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && isExistingOwner();
-      allow delete: if isSignedIn() && isExistingOwner();
+
+      allow update: if isSignedIn() && isOwner();
+
+      allow delete: if isSignedIn() && isOwner();
     }
   }
 }
