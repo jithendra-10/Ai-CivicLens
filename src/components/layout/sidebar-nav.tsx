@@ -28,7 +28,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
 
   const citizenNav = [
     { href: '/report', label: 'New Report', icon: FilePlus2 },
-    // { href: '/my-reports', label: 'My Reports', icon: ListOrdered },
+    { href: '/my-reports', label: 'My Reports', icon: ListOrdered },
   ];
 
   const authorityNav = [
@@ -57,7 +57,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname.startsWith(item.href)}
                 tooltip={item.label}
               >
                 <Link href={item.href}>
