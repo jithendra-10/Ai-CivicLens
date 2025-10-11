@@ -9,6 +9,8 @@ import Loading from '@/app/loading';
 import { StatCard } from './stat-card';
 import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { AiSummary } from './ai-summary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 export function AnalyticsDashboard() {
   const firestore = useFirestore();
@@ -32,21 +34,35 @@ export function AnalyticsDashboard() {
   const resolved = reports.filter(r => r.status === 'Resolved').length;
 
   return (
-    <div className="space-y-8">
+    <Tabs defaultValue="overview" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="reports">Manage Reports</TabsTrigger>
+      </TabsList>
+      <TabsContent value="overview" className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard icon={FileText} title="Total Reports" value={total} />
             <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" />
             <StatCard icon={CheckCircle} title="Resolved" value={resolved} />
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="lg:col-span-3">
                 <AiSummary reports={reports} />
             </div>
-            <div className="lg:col-span-2">
-                <ReportsTable columns={columns} data={reports} />
-            </div>
+            <Card className="lg:col-span-4">
+                <CardHeader>
+                    <CardTitle className="font-headline">Recent Reports</CardTitle>
+                    <CardDescription>A quick look at the 5 most recently submitted issues.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ReportsTable columns={columns} data={reports.slice(0, 5)} />
+                </CardContent>
+            </Card>
         </div>
-    </div>
+      </TabsContent>
+      <TabsContent value="reports" className="space-y-4">
+        <ReportsTable columns={columns} data={reports} />
+      </TabsContent>
+    </Tabs>
     );
 }

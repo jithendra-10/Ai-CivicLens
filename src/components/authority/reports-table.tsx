@@ -29,7 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -52,7 +52,10 @@ export function ReportsTable<TData, TValue>({
     []
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>({
+      reportId: false, // Hide ID column by default
+      userFullName: false, // Hide Reported By column by default
+    });
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
@@ -74,7 +77,7 @@ export function ReportsTable<TData, TValue>({
     },
     initialState: {
         pagination: {
-            pageSize: 5,
+            pageSize: 10,
         }
     }
   });
@@ -102,7 +105,7 @@ export function ReportsTable<TData, TValue>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              <SlidersHorizontal className="mr-2 h-4 w-4" /> View
+              <SlidersHorizontal className="mr-2 h-4 w-4" /> View Columns
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -119,7 +122,7 @@ export function ReportsTable<TData, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {column.id === 'userFullName' ? 'Reported By' : column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}
