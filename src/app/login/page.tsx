@@ -44,9 +44,8 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: "You've been successfully logged in.",
         });
-        // The AppLayout will redirect based on the user's role
-        // after onAuthStateChanged fires.
-        router.push('/');
+        // The AppLayout will redirect based on the user's role.
+        router.push('/dashboard');
       } catch (error: any) {
         console.error('Login failed:', error);
         toast({

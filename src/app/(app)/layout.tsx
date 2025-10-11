@@ -40,15 +40,19 @@ export default function AppLayout({
 
   useEffect(() => {
     if (appUser) {
-      if (appUser.role === 'citizen') {
-        if (pathname.startsWith('/authority')) {
+      // If the user is on the root path, redirect them to their correct dashboard.
+      if (pathname === '/') {
+        if (appUser.role === 'citizen') {
           router.replace('/dashboard');
-        }
-      }
-      if (appUser.role === 'authority') {
-        if (!pathname.startsWith('/authority')) {
+        } else if (appUser.role === 'authority') {
           router.replace('/authority');
         }
+      }
+      // Enforce role-based access to routes.
+      else if (appUser.role === 'citizen' && pathname.startsWith('/authority')) {
+        router.replace('/dashboard');
+      } else if (appUser.role === 'authority' && !pathname.startsWith('/authority')) {
+        router.replace('/authority');
       }
     }
   }, [appUser, pathname, router]);
@@ -57,33 +61,22 @@ export default function AppLayout({
     return <Loading />;
   }
 
-  if (!user) {
-    // This can happen briefly during the redirect. Showing a loader is better than a flash of content.
+  if (!user || !appUser) {
+    // This can happen briefly during the redirect or if data is missing.
+    // Showing a loader is better than a flash of content or an error.
     return <Loading />;
   }
 
-  // Only render the layout if we have the appUser
-  if (appUser) {
-    // Redirect to the correct default page after login if user is on root of app
-    if (pathname === '/') {
-        if (appUser.role === 'citizen') router.replace('/dashboard');
-        if (appUser.role === 'authority') router.replace('/authority');
-        return <Loading />;
-    }
-
-    return (
-      <SidebarProvider>
-        <Sidebar>
-          <SidebarNavigation user={appUser} />
-        </Sidebar>
-        <SidebarInset>
-          <AppHeader user={appUser} />
-          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
-  
-  // Fallback, in case something unexpected happens
-  return <Loading />;
+  // At this point, we have a logged-in user and their app-specific data.
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarNavigation user={appUser} />
+      </Sidebar>
+      <SidebarInset>
+        <AppHeader user={appUser} />
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
