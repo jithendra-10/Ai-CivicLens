@@ -109,7 +109,13 @@
     "providers": [
       "password",
       "anonymous"
-    ]
+    ],
+    "customClaims": {
+      "authority": {
+        "type": "boolean",
+        "description": "A custom claim that is set to true if the user has the 'authority' role. This is used in security rules to grant privileged access."
+      }
+    }
   },
   "firestore": {
      "structure": [
