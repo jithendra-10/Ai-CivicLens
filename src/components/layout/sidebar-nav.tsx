@@ -27,12 +27,12 @@ export default function SidebarNavigation({ user }: { user: User }) {
   const router = useRouter();
 
   const citizenNav = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/report', label: 'New Report', icon: FilePlus2 },
   ];
 
   const authorityNav = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    // { href: '/settings', label: 'Settings', icon: Settings },
+    { href: '/authority', label: 'Dashboard', icon: LayoutDashboard },
   ];
 
   const navItems = user.role === 'citizen' ? citizenNav : authorityNav;

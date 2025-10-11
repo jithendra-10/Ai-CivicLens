@@ -40,11 +40,15 @@ export default function AppLayout({
 
   useEffect(() => {
     if (appUser) {
-      if (appUser.role === 'citizen' && pathname.startsWith('/dashboard')) {
-        router.replace('/report');
+      if (appUser.role === 'citizen') {
+        if (pathname.startsWith('/authority')) {
+          router.replace('/dashboard');
+        }
       }
-      if (appUser.role === 'authority' && pathname.startsWith('/report')) {
-        router.replace('/dashboard');
+      if (appUser.role === 'authority') {
+        if (!pathname.startsWith('/authority')) {
+          router.replace('/authority');
+        }
       }
     }
   }, [appUser, pathname, router]);
@@ -60,6 +64,13 @@ export default function AppLayout({
 
   // Only render the layout if we have the appUser
   if (appUser) {
+    // Redirect to the correct default page after login if user is on root of app
+    if (pathname === '/') {
+        if (appUser.role === 'citizen') router.replace('/dashboard');
+        if (appUser.role === 'authority') router.replace('/authority');
+        return <Loading />;
+    }
+
     return (
       <SidebarProvider>
         <Sidebar>

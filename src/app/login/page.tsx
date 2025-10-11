@@ -46,8 +46,7 @@ export default function LoginPage() {
         });
         // The AppLayout will redirect based on the user's role
         // after onAuthStateChanged fires.
-        // We can just push to a default authed page.
-        router.push('/dashboard');
+        router.push('/');
       } catch (error: any) {
         console.error('Login failed:', error);
         toast({
