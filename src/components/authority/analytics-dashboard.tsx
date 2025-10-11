@@ -7,6 +7,7 @@ import Loading from '@/app/loading';
 import { StatCard } from './stat-card';
 import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { AiSummary } from './ai-summary';
+import { IssueTypeChart } from './issue-type-chart';
 
 export function AnalyticsDashboard() {
   const firestore = useFirestore();
@@ -36,7 +37,8 @@ export function AnalyticsDashboard() {
             <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" />
             <StatCard icon={CheckCircle} title="Resolved" value={resolved} />
         </div>
-        <div className="grid grid-cols-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <IssueTypeChart reports={reports} />
             <AiSummary reports={reports} />
         </div>
     </div>
