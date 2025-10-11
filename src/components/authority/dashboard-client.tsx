@@ -5,6 +5,7 @@ import { ReportsTable } from './reports-table';
 import { columns } from './columns';
 import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
+import Loading from '@/app/loading';
 
 export function DashboardClient() {
   const firestore = useFirestore();
@@ -20,7 +21,7 @@ export function DashboardClient() {
   const { data: reports, isLoading } = useCollection<Report>(reportsQuery);
 
   if (isLoading) {
-    return <div>Loading reports...</div>;
+    return <Loading />;
   }
 
   return <ReportsTable columns={columns} data={reports || []} />;
