@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
@@ -23,6 +23,7 @@ export default function AppLayout({
   const router = useRouter();
   const pathname = usePathname();
   const firestore = useFirestore();
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const userDocRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
@@ -40,6 +41,7 @@ export default function AppLayout({
 
   useEffect(() => {
     if (appUser) {
+      let authorized = true;
       // If the user is on the root path, redirect them to their correct dashboard.
       if (pathname === '/') {
         if (appUser.role === 'citizen') {
@@ -47,20 +49,25 @@ export default function AppLayout({
         } else if (appUser.role === 'authority') {
           router.replace('/authority');
         }
+        authorized = false;
       }
       // Enforce role-based access to routes.
       else if (appUser.role === 'citizen' && pathname.startsWith('/authority')) {
         router.replace('/dashboard');
-      } else if (appUser.role === 'authority' && !pathname.startsWith('/authority')) {
+        authorized = false;
+      } else if (appUser.role === 'authority' && !pathname.startsWith('/authority') && pathname !== '/dashboard') {
+         // Allow authority to be on /dashboard briefly before redirect
         router.replace('/authority');
+        authorized = false;
       }
+      setIsAuthorized(authorized);
     }
   }, [appUser, pathname, router]);
 
-  if (isUserLoading || (user && isAppUserLoading) || (user && !appUser)) {
+  if (isUserLoading || (user && isAppUserLoading) || (user && !appUser) || !isAuthorized) {
     return <Loading />;
   }
-
+  
   if (!user || !appUser) {
     // This can happen briefly during the redirect or if data is missing.
     // Showing a loader is better than a flash of content or an error.
