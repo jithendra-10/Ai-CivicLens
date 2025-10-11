@@ -60,6 +60,8 @@ export function ReportDetailsDialog({
                 return;
             }
             const reportRef = doc(firestore, 'reports', report.id);
+            // TODO: Handle resolution image upload to Firebase Storage
+            // and get the URL to save in the document.
             updateDocumentNonBlocking(reportRef, { status });
             toast({ title: 'Success', description: "Report status updated." });
             setIsOpen(false);
@@ -142,7 +144,10 @@ export function ReportDetailsDialog({
             {status === 'Resolved' && (
                 <div className="space-y-2">
                     <Label htmlFor="resolution-photo">Upload Resolution Photo</Label>
-                    <Input id="resolution-photo" type="file" />
+                    <Input id="resolution-photo" type="file" accept="image/*" />
+                    <p className="text-xs text-muted-foreground">
+                        Upload a photo showing the resolved issue.
+                    </p>
                 </div>
             )}
           </div>
