@@ -15,6 +15,7 @@ import {
   CheckCircle,
   BarChart,
   BrainCircuit,
+  History,
 } from 'lucide-react';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
@@ -74,11 +75,16 @@ export default function CitizenDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Recent Activity</CardTitle>
-              <CardDescription>
-                Here are the latest updates on your submitted reports.
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="font-headline">Recent Activity</CardTitle>
+                <CardDescription>
+                  The latest updates on your submitted reports.
+                </CardDescription>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/my-reports">View All</Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <RecentActivityTable reports={recentReports} />
@@ -112,7 +118,7 @@ export default function CitizenDashboardPage() {
           <Link href="/report">Report New Issue</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
-          <Link href="#">View All Previously Reported</Link>
+          <Link href="/my-reports">View All My Reports</Link>
         </Button>
       </div>
     </div>

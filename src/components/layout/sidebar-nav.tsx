@@ -15,7 +15,8 @@ import {
   ListOrdered,
   LogOut,
   Settings,
-  FileClock
+  FileClock,
+  History,
 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import Link from 'next/link';
@@ -30,6 +31,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
   const citizenNav = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/report', label: 'New Report', icon: FilePlus2 },
+    { href: '/my-reports', label: 'My Reports', icon: History },
   ];
 
   const authorityNav = [
@@ -42,7 +44,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/login');
-  }
+  };
 
   return (
     <>
@@ -71,14 +73,14 @@ export default function SidebarNavigation({ user }: { user: User }) {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Log Out" onClick={handleLogout}>
-                  <LogOut />
-                  <span>Log Out</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Log Out" onClick={handleLogout}>
+              <LogOut />
+              <span>Log Out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </>
   );
