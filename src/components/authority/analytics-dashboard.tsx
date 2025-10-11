@@ -9,8 +9,9 @@ import Loading from '@/app/loading';
 import { StatCard } from './stat-card';
 import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { AiSummary } from './ai-summary';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import Link from 'next/link';
+import { Button } from '../ui/button';
 
 export function AnalyticsDashboard() {
   const firestore = useFirestore();
@@ -34,12 +35,7 @@ export function AnalyticsDashboard() {
   const resolved = reports.filter(r => r.status === 'Resolved').length;
 
   return (
-    <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="reports">Manage Reports</TabsTrigger>
-      </TabsList>
-      <TabsContent value="overview" className="space-y-4">
+    <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard icon={FileText} title="Total Reports" value={total} />
             <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" />
@@ -56,13 +52,12 @@ export function AnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                     <ReportsTable columns={columns} data={reports.slice(0, 5)} />
+                     <Button asChild className="mt-4 w-full">
+                        <Link href="/authority/reports">View All Reports</Link>
+                    </Button>
                 </CardContent>
             </Card>
         </div>
-      </TabsContent>
-      <TabsContent value="reports" className="space-y-4">
-        <ReportsTable columns={columns} data={reports} />
-      </TabsContent>
-    </Tabs>
+    </div>
     );
 }

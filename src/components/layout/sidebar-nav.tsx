@@ -15,6 +15,7 @@ import {
   ListOrdered,
   LogOut,
   Settings,
+  FileClock
 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import Link from 'next/link';
@@ -33,6 +34,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
 
   const authorityNav = [
     { href: '/authority', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/authority/reports', label: 'Recent Reports', icon: FileClock },
   ];
 
   const navItems = user.role === 'citizen' ? citizenNav : authorityNav;
@@ -56,7 +58,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith(item.href)}
+                isActive={pathname === item.href}
                 tooltip={item.label}
               >
                 <Link href={item.href}>
