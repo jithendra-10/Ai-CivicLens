@@ -10,7 +10,7 @@ import { columns } from './my-reports-columns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export function MyReportsClient() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const reportsQuery = useMemoFirebase(
@@ -25,9 +25,9 @@ export function MyReportsClient() {
     [firestore, user]
   );
 
-  const { data: reports, isLoading } = useCollection<Report>(reportsQuery);
+  const { data: reports, isLoading: isReportsLoading } = useCollection<Report>(reportsQuery);
 
-  if (isLoading || !reports) {
+  if (isUserLoading || isReportsLoading || !reports) {
     return <Loading />;
   }
 

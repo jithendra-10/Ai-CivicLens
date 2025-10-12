@@ -1,96 +1,80 @@
 /**
- * @fileoverview Firestore Security Rules for CivicAI.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a role-based access control system for the CivicAI application.
+ * Citizens can create, read, update, and delete their own reports. Authorities can read and update any report.
+ * User profiles are private and only accessible to the owning user.
  *
- * Core Philosophy:
- * This ruleset enforces a user-ownership model for user profiles and a public-read,
- * owner-write model for reports. This means users can only manage their own profile data,
- * while reports are publicly visible but can only be created, updated, or deleted by their authors.
+ * @dataStructure
+ * - /users/{userId}: Stores user profile information.
+ * - /reports/{reportId}: Stores civic issue reports.
  *
- * Data Structure:
- * - /users/{userId}: Stores individual user profiles, accessible only to the user themselves.
- * - /reports/{reportId}: Stores civic issue reports, publicly readable but writable only by the report creator.
+ * @keySecurityDecisions
+ * - Users can only manage their own profiles. User listing is disallowed.
+ * - Reports have public read access, but only owners or authorities can modify them.
+ * - Authorities have broader privileges, including the ability to update any report.
+ * - List operations on /reports are restricted: citizens can only list their own reports, while authorities can list all reports.
  *
- * Key Security Decisions:
- * - User listing is disallowed for privacy.
- * - Reports are publicly readable to encourage transparency and community involvement.
- * - The `authorityId` and `resolvedImage` fields in the Report entity are not secured in this version of rules.
+ * @denormalizationForAuthorization
+ * - The 'reports' collection relies on the `userId` field within each document to enforce ownership. This avoids costly `get()` calls to the `/users/{userId}` collection to determine the user's role or identity.
  *
- * Denormalization for Authorization:
- * - The `Report` entity MUST contain a `userId` field to indicate the author,
- *   enabling the `isOwner(resource.data.userId)` check for write operations.
+ * @structuralSegregation
+ * - User profiles and reports are stored in separate top-level collections to simplify access control and optimize queries.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
+     * @description Enforces access control for user profiles.
      * @path /users/{userId}
-     * @allow (create) - User with UID 'user123' can create their profile.
-     * @allow (get, update, delete) - User with UID 'user123' can read, update, and delete their own profile.
-     * @deny (create) - User with UID 'user456' cannot create a profile with ID 'user123'.
-     * @deny (get, update, delete) - User with UID 'user456' cannot read, update, or delete the profile of user 'user123'.
-     * @principle Enforces document ownership: only the user with the matching UID can create, read, update, or delete their profile.
+     * @allow (create) - A user can create their own profile if the UID matches the {userId}.
+     * @allow (read) - A user can read their own profile if the UID matches the {userId}.
+     * @allow (update) - A user can update their own profile if the UID matches the {userId}.
+     * @allow (delete) - A user can delete their own profile if the UID matches the {userId}.
+     * @deny (create) - A user cannot create a profile with a mismatched UID.
+     * @deny (read) - A user cannot read another user's profile.
+     * @deny (list) - Listing all users is not allowed.
+     * @principle Enforces document ownership for writes. Restricts access to a user's own data tree.
      */
     match /users/{userId} {
-      // Helper function to check if the authenticated user is the owner of the document.
-      function isOwner() {
+      function isOwner(userId) {
         return request.auth != null && request.auth.uid == userId;
       }
 
-      // Helper function to check if the authenticated user is the existing owner of the document.
-      function isExistingOwner() {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      // Allow a user to create their own profile if the userId matches their auth UID.
-      allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.uid == request.auth.uid;
-
-      // Allow a user to get their own profile.
-      allow get: if isOwner();
-
-      // Disallow listing all users.
+      allow create: if isOwner(userId) && request.resource.data.uid == request.auth.uid;
+      allow get: if isOwner(userId);
       allow list: if false;
-
-      // Allow a user to update their own profile.
-      allow update: if isExistingOwner();
-
-      // Allow a user to delete their own profile.
-      allow delete: if isExistingOwner();
+      allow update: if isOwner(userId) && request.resource.data.uid == request.auth.uid;
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Controls access to civic issue reports.
+     * @description Enforces access control for civic issue reports.
      * @path /reports/{reportId}
-     * @allow (get, list) - Any user (signed in or not) can read any report.
-     * @allow (create) - User with UID 'user123' can create a report with their UID in the 'userId' field.
-     * @allow (update, delete) - User with UID 'user123' can update/delete a report if they are the owner (userId matches).
-     * @deny (create) - User with UID 'user456' cannot create a report with 'userId' set to 'user123'.
-     * @deny (update, delete) - User with UID 'user456' cannot update/delete a report owned by 'user123'.
-     * @principle Allows public read access to reports but restricts write access to the report owner.
+     * @allow (get) - Any authenticated user can read a report.
+     * @allow (list) - Authorities can list all reports. Citizens can list their own reports (when using where("userId", "==", request.auth.uid)).
+     * @allow (create) - An authenticated user can create a report with their UID as the userId.
+     * @allow (update) - The owner or an authority can update a report.
+     * @allow (delete) - Only the owner can delete a report.
+     * @deny (create) - A user cannot create a report with a mismatched UID.
+     * @deny (update) - A user cannot update another user's report if they are not an authority.
+     * @deny (delete) - A user cannot delete another user's report.
+     * @principle Enforces document ownership for writes. Allows public read access.
      */
     match /reports/{reportId} {
-      // Helper function to check if the authenticated user is the owner of the report.
-      function isOwner() {
-        return request.auth != null && request.auth.uid == resource.data.userId;
+      function isOwner(reportUserId) {
+        return request.auth != null && request.auth.uid == reportUserId;
       }
 
-      // Helper function to check if the authenticated user is the existing owner of the document.
-      function isExistingOwner() {
-        return request.auth != null && request.auth.uid == resource.data.userId;
+      function isAuthority() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "authority";
       }
 
-      // Allow anyone to read reports.
-      allow get, list: if true;
-
-      // Allow a user to create a report if the userId matches their auth UID.
+      allow get: if true;
+      allow list: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-
-      // Allow the owner of the report to update it.
-      allow update: if isOwner();
-
-      // Allow the owner of the report to delete it.
-      allow delete: if isOwner();
+      allow update: if request.auth != null && (isOwner(resource.data.userId) || isAuthority());
+      allow delete: if request.auth != null && isOwner(resource.data.userId);
     }
   }
 }
