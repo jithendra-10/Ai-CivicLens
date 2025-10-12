@@ -76,7 +76,7 @@
           "type": "string",
           "description": "Reference to User (Authority). (Relationship: User 1:N Report - resolved by)"
         },
-        "resolvedImage": {
+        "resolvedImageUrl": {
           "type": "string",
           "description": "URL of the image uploaded by the authority as proof of resolution, stored in Firebase Storage.",
           "format": "uri"
@@ -92,6 +92,10 @@
               "type": "number"
             }
           }
+        },
+        "locationName": {
+          "type": "string",
+          "description": "Human-readable name for the location, from reverse geocoding."
         },
         "fingerprintKeywords": {
           "type": "array",
