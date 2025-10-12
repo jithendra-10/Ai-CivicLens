@@ -23,7 +23,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useTransition, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle, MapPin } from 'lucide-react';
+import { LoaderCircle, MapPin, ThumbsUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -174,6 +174,14 @@ export function ReportDetailsDialog({
             )}
           </div>
           <div className="space-y-4">
+             {report.upvoteCount && report.upvoteCount > 0 && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <ThumbsUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                  {report.upvoteCount} other citizen(s) have also reported this issue.
+                </p>
+              </div>
+            )}
             <div>
               <Label className="text-muted-foreground">Severity</Label>
               <div className="pt-1">

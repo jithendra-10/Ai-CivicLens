@@ -29,8 +29,8 @@ import { generateImageFingerprint } from '@/ai/flows/generate-image-fingerprint'
 import Image from 'next/image';
 import { LoaderCircle, UploadCloud, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useUser, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, where, getDocs, doc, increment } from 'firebase/firestore';
 import type { Report } from '@/lib/types';
 import { DuplicateReportDialog } from './duplicate-report-dialog';
 
@@ -221,6 +221,7 @@ export function ReportForm() {
             userFullName: user.displayName || 'Anonymous',
             createdAt: new Date().toISOString(),
             status: 'Submitted' as const,
+            upvoteCount: 0,
         };
 
         const reportsCollection = collection(firestore, 'reports');
@@ -231,14 +232,49 @@ export function ReportForm() {
         router.refresh();
     });
   }
+  
+  const handleDuplicateConfirm = () => {
+    if (!firestore || !user || potentialDuplicates.length === 0) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not process duplicate confirmation.' });
+        return;
+    }
+    
+    startTransition(() => {
+        // Find the original report (oldest one)
+        const originalReport = [...potentialDuplicates].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0];
+
+        if (!originalReport.id) return;
+        
+        // Increment the upvote count on the original report
+        const reportRef = doc(firestore, 'reports', originalReport.id);
+        updateDocumentNonBlocking(reportRef, {
+            upvoteCount: increment(1)
+        });
+
+        // Optional: record who submitted the duplicate
+        const duplicateSubmissionRef = collection(firestore, 'reports', originalReport.id, 'duplicates');
+        addDocumentNonBlocking(duplicateSubmissionRef, {
+            userId: user.uid,
+            userFullName: user.displayName || 'Anonymous',
+            originalReportId: originalReport.id,
+            createdAt: new Date().toISOString(),
+        });
+
+        toast({ title: 'Thank you!', description: "We've upvoted the existing report with your submission." });
+        router.push('/dashboard');
+        router.refresh();
+    });
+  };
 
   const onSubmit = () => {
     // If no duplicates were found, submit directly.
-    // If duplicates were found, the dialog will be open, so this function will be called again by the dialog.
+    // If duplicates were found, the dialog is already open, so this function is triggered by the "No" button.
     if (potentialDuplicates.length === 0) {
       proceedWithSubmission();
     } else {
-      setIsDuplicateDialogOpen(true);
+      // This is called when user clicks "No, this is a new issue"
+      setIsDuplicateDialogOpen(false);
+      proceedWithSubmission();
     }
   };
 
@@ -248,13 +284,11 @@ export function ReportForm() {
         isOpen={isDuplicateDialogOpen}
         setIsOpen={setIsDuplicateDialogOpen}
         duplicates={potentialDuplicates}
-        onConfirm={() => {
-          // In a real app, you might "upvote" the existing report.
-          // For now, we'll just navigate away.
-          toast({ title: 'Thank you!', description: "Your feedback on the existing report has been noted." });
-          router.push('/dashboard');
+        onConfirm={handleDuplicateConfirm}
+        onReject={() => {
+            setIsDuplicateDialogOpen(false);
+            proceedWithSubmission();
         }}
-        onReject={proceedWithSubmission}
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

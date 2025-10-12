@@ -104,6 +104,10 @@
           },
           "description": "AI-generated keywords describing the image content for duplicate detection."
         },
+        "upvoteCount": {
+          "type": "number",
+          "description": "A count of how many other users have marked their report as a duplicate of this one."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp of when the report was created.",
@@ -121,6 +125,41 @@
         "location",
         "createdAt"
       ]
+    },
+    "DuplicateSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Duplicate Submission",
+      "type": "object",
+      "description": "Records when a user submits a report that is a duplicate of an existing one.",
+      "properties": {
+        "duplicateSubmissionId": {
+          "type": "string",
+          "description": "Auto-generated unique identifier."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who submitted the duplicate."
+        },
+        "userFullName": {
+          "type": "string",
+          "description": "The full name of the user who submitted."
+        },
+        "originalReportId": {
+          "type": "string",
+          "description": "The ID of the report this was a duplicate of."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the duplicate was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "userFullName",
+        "originalReportId",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -136,7 +175,7 @@
     }
   },
   "firestore": {
-     "structure": [
+    "structure": [
       {
         "path": "/users/{userId}",
         "definition": {
@@ -165,6 +204,26 @@
             {
               "name": "reportId",
               "description": "Auto-generated unique identifier for the report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reports/{reportId}/duplicates/{duplicateId}",
+        "definition": {
+          "entityName": "DuplicateSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/DuplicateSubmission"
+          },
+          "description": "Stores records of users who submitted a duplicate of a parent report.",
+          "params": [
+            {
+              "name": "reportId",
+              "description": "The ID of the original report."
+            },
+            {
+              "name": "duplicateId",
+              "description": "Auto-generated unique identifier for the duplicate submission record."
             }
           ]
         }

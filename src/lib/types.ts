@@ -29,5 +29,14 @@ export type Report = {
     lng: number;
   };
   locationName?: string;
+  upvoteCount?: number;
   createdAt: string; // ISO string
 };
+
+export type DuplicateSubmission = {
+    id?: string;
+    userId: string;
+    userFullName: string;
+    originalReportId: string;
+    createdAt: string; // ISO string
+}
