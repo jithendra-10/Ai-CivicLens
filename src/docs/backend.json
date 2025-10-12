@@ -1,0 +1,170 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CivicAI system, either a citizen or an authority.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase UID - Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "role": {
+          "type": "string",
+          "description": "User's role within the system ('citizen' or 'authority')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the user was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "fullName",
+        "role",
+        "createdAt"
+      ]
+    },
+    "Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Report",
+      "type": "object",
+      "description": "Represents a civic issue report submitted by a citizen.",
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "description": "Auto-generated unique identifier for the report entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Report)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image uploaded by the citizen, stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "issueType": {
+          "type": "string",
+          "description": "Type of civic issue reported (e.g., 'Pothole', 'Garbage')."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the reported issue ('Low', 'Medium', 'High')."
+        },
+        "aiDescription": {
+          "type": "string",
+          "description": "AI-generated summary of the issue."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the report ('Submitted', 'In Progress', 'Resolved')."
+        },
+        "authorityId": {
+          "type": "string",
+          "description": "Reference to User (Authority). (Relationship: User 1:N Report - resolved by)"
+        },
+        "resolvedImage": {
+          "type": "string",
+          "description": "URL of the image uploaded by the authority as proof of resolution, stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "location": {
+          "type": "object",
+          "description": "Geo-location object of the report.",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          }
+        },
+        "fingerprintKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "AI-generated keywords describing the image content for duplicate detection."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the report was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "reportId",
+        "userId",
+        "imageUrl",
+        "issueType",
+        "severity",
+        "aiDescription",
+        "status",
+        "location",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ],
+    "customClaims": {
+      "authority": {
+        "type": "boolean",
+        "description": "A custom claim that is set to true if the user has the 'authority' role. This is used in security rules to grant privileged access."
+      }
+    }
+  },
+  "firestore": {
+     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": {
+            "$ref": "#/backend/entities/Report"
+          },
+          "description": "Stores all civic issue reports from all users.",
+          "params": [
+            {
+              "name": "reportId",
+              "description": "Auto-generated unique identifier for the report."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

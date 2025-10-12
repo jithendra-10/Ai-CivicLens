@@ -126,7 +126,6 @@ export function ReportDetailsDialog({
               <Label className="text-muted-foreground">Location</Label>
               <p className="text-sm">
                 Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}
-                {report.locationName && ` (${report.locationName})`}
               </p>
             </div>
             <div className="space-y-2">

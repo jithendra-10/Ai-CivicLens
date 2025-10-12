@@ -28,7 +28,5 @@ export type Report = {
     lat: number;
     lng: number;
   };
-  locationName?: string;
-  locationFingerprintKeywords?: string[];
   createdAt: string; // ISO string
 };
