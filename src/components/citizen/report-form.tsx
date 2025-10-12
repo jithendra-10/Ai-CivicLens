@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { generateCivicIssueReport } from '@/ai/flows/generate-civic-issue-report';
 import { generateImageFingerprint } from '@/ai/flows/generate-image-fingerprint';
+import { analyzeLocation } from '@/ai/flows/analyze-location-flow';
 import Image from 'next/image';
 import { LoaderCircle, UploadCloud, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -41,6 +42,8 @@ const reportSchema = z.object({
   imageFile: z.instanceof(File).optional(),
   imageUrl: z.string().optional(),
   fingerprintKeywords: z.array(z.string()).optional(),
+  locationName: z.string().optional(),
+  locationFingerprintKeywords: z.array(z.string()).optional(),
 });
 
 type ReportFormValues = z.infer<typeof reportSchema>;
@@ -66,6 +69,8 @@ export function ReportForm() {
       severity: 'Medium',
       aiDescription: '',
       fingerprintKeywords: [],
+      locationName: '',
+      locationFingerprintKeywords: [],
     },
   });
 
@@ -73,10 +78,12 @@ export function ReportForm() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation({
+          const newLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          });
+          };
+          setLocation(newLocation);
+          runLocationAnalysis(newLocation);
         },
         () => {
           toast({
@@ -84,11 +91,33 @@ export function ReportForm() {
             title: 'Location Error',
             description: 'Could not get your location. Please enable location services.',
           });
-          setLocation({ lat: 34.0522, lng: -118.2437 });
+          // Fallback location
+          const fallbackLocation = { lat: 34.0522, lng: -118.2437 };
+          setLocation(fallbackLocation);
+          runLocationAnalysis(fallbackLocation);
         }
       );
     }
   }, [toast]);
+
+  const runLocationAnalysis = async (loc: { lat: number; lng: number }) => {
+    try {
+      const locationResult = await analyzeLocation({ location: loc });
+      form.setValue('locationName', locationResult.locationName);
+      form.setValue('locationFingerprintKeywords', locationResult.locationFingerprintKeywords);
+      toast({
+        title: 'Location Analyzed',
+        description: `Location identified as: ${locationResult.locationName}`,
+      });
+    } catch (error) {
+      console.error('Location analysis failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Location Analysis Failed',
+        description: 'Could not analyze geographic location.',
+      });
+    }
+  }
 
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -130,16 +159,22 @@ export function ReportForm() {
 
           // Check for duplicates
           const reportsRef = collection(firestore, 'reports');
-          const q = query(reportsRef, where('fingerprintKeywords', 'array-contains-any', fingerprintResult.fingerprintKeywords.slice(0, 10)));
-          const querySnapshot = await getDocs(q);
-          const duplicates: Report[] = [];
-          querySnapshot.forEach((doc) => {
-            duplicates.push({ id: doc.id, ...doc.data() } as Report);
-          });
+          const imageKeywords = fingerprintResult.fingerprintKeywords.slice(0, 10);
+          const locationKeywords = form.getValues('locationFingerprintKeywords')?.slice(0, 5) || [];
           
-          if (duplicates.length > 0) {
-            setPotentialDuplicates(duplicates);
-            setIsDuplicateDialogOpen(true);
+          if (imageKeywords.length > 0 || locationKeywords.length > 0) {
+            const allKeywords = [...new Set([...imageKeywords, ...locationKeywords])];
+            const q = query(reportsRef, where('fingerprintKeywords', 'array-contains-any', allKeywords));
+            const querySnapshot = await getDocs(q);
+            const duplicates: Report[] = [];
+            querySnapshot.forEach((doc) => {
+              duplicates.push({ id: doc.id, ...doc.data() } as Report);
+            });
+            
+            if (duplicates.length > 0) {
+              setPotentialDuplicates(duplicates);
+              setIsDuplicateDialogOpen(true);
+            }
           }
         };
       } catch (error) {
@@ -183,6 +218,8 @@ export function ReportForm() {
             fingerprintKeywords: data.fingerprintKeywords,
             imageHint: 'user uploaded',
             location: location,
+            locationName: data.locationName,
+            locationFingerprintKeywords: data.locationFingerprintKeywords,
             userId: user.uid,
             userFullName: user.displayName || 'Anonymous',
             createdAt: new Date().toISOString(),
@@ -271,6 +308,20 @@ export function ReportForm() {
               )}
             </div>
           </div>
+
+          <FormField
+            control={form.control}
+            name="locationName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="AI-generated location name..." {...field} disabled />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

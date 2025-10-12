@@ -82,9 +82,27 @@
           "format": "uri"
         },
         "location": {
+          "type": "object",
+          "description": "Geo-location object of the report.",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          }
+        },
+        "locationName": {
           "type": "string",
-          "description": "location object of the report",
-          "format": "uri"
+          "description": "AI-generated human-readable name for the location."
+        },
+        "locationFingerprintKeywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "AI-generated keywords describing the location context."
         },
         "createdAt": {
           "type": "string",

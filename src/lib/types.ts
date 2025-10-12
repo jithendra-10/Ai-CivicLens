@@ -16,7 +16,7 @@ export type Report = {
   userFullName: string;
   imageUrl: string;
   imageHint: string;
-  fingerprintKeywords?: string[]; // Changed from imageFingerprint
+  fingerprintKeywords?: string[];
   issueType: string;
   severity: 'Low' | 'Medium' | 'High';
   aiDescription: string;
@@ -28,5 +28,7 @@ export type Report = {
     lat: number;
     lng: number;
   };
+  locationName?: string;
+  locationFingerprintKeywords?: string[];
   createdAt: string; // ISO string
 };
