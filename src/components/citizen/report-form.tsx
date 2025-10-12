@@ -25,9 +25,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { generateCivicIssueReport } from '@/ai/flows/generate-civic-issue-report';
+import { generateImageFingerprint } from '@/ai/flows/generate-image-fingerprint';
 import Image from 'next/image';
 import { LoaderCircle, UploadCloud, X } from 'lucide-react';
-import { addReport } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -39,6 +39,7 @@ const reportSchema = z.object({
   aiDescription: z.string().min(1, 'Description is required.'),
   imageFile: z.instanceof(File).optional(),
   imageUrl: z.string().optional(),
+  imageFingerprint: z.string().optional(),
 });
 
 type ReportFormValues = z.infer<typeof reportSchema>;
@@ -60,6 +61,7 @@ export function ReportForm() {
       issueType: '',
       severity: 'Medium',
       aiDescription: '',
+      imageFingerprint: '',
     },
   });
 
@@ -107,11 +109,17 @@ export function ReportForm() {
         reader.onload = async () => {
           const photoDataUri = reader.result as string;
           form.setValue('imageUrl', photoDataUri);
-          const result = await generateCivicIssueReport({ photoDataUri, location });
           
-          form.setValue('issueType', result.issueType);
-          form.setValue('severity', result.severity as 'Low' | 'Medium' | 'High');
-          form.setValue('aiDescription', result.aiDescription);
+          // Run AI analysis in parallel
+          const [reportResult, fingerprintResult] = await Promise.all([
+            generateCivicIssueReport({ photoDataUri, location }),
+            generateImageFingerprint({ photoDataUri }),
+          ]);
+          
+          form.setValue('issueType', reportResult.issueType);
+          form.setValue('severity', reportResult.severity as 'Low' | 'Medium' | 'High');
+          form.setValue('aiDescription', reportResult.aiDescription);
+          form.setValue('imageFingerprint', fingerprintResult.fingerprint);
           
           toast({
             title: 'AI Analysis Complete',
@@ -135,6 +143,7 @@ export function ReportForm() {
     setImagePreview(null);
     form.setValue('imageFile', undefined);
     form.setValue('imageUrl', '');
+    form.setValue('imageFingerprint', '');
     form.setValue('issueType', '');
     form.setValue('severity', 'Medium');
     form.setValue('aiDescription', '');
@@ -154,6 +163,7 @@ export function ReportForm() {
             severity: data.severity,
             aiDescription: data.aiDescription,
             imageUrl: data.imageUrl,
+            imageFingerprint: data.imageFingerprint,
             imageHint: 'user uploaded', // In a real app, you might generate a hint
             location: location,
             userId: user.uid,
@@ -166,8 +176,7 @@ export function ReportForm() {
         addDocumentNonBlocking(reportsCollection, reportData);
 
         toast({ title: 'Success!', description: "Report submitted successfully!" });
-        form.reset();
-        setImagePreview(null);
+        router.push('/my-reports');
         router.refresh();
     });
   };

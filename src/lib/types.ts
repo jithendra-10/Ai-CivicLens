@@ -16,6 +16,7 @@ export type Report = {
   userFullName: string;
   imageUrl: string;
   imageHint: string;
+  imageFingerprint?: string; // New field for duplicate detection
   issueType: string;
   severity: 'Low' | 'Medium' | 'High';
   aiDescription: string;
