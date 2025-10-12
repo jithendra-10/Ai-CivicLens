@@ -6,7 +6,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import Loading from '@/app/loading';
 import { StatCard } from './stat-card';
 import { FileText, Clock, CheckCircle } from 'lucide-react';
-import { AiSummary } from './ai-summary';
+import { ConversationalAnalytics } from './conversational-analytics';
 import { IssueTypeChart } from './issue-type-chart';
 
 export function AnalyticsDashboard() {
@@ -39,7 +39,7 @@ export function AnalyticsDashboard() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <IssueTypeChart reports={reports} />
-            <AiSummary reports={reports} />
+            <ConversationalAnalytics reports={reports} />
         </div>
     </div>
     );
