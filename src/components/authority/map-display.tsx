@@ -17,6 +17,10 @@ interface MapDisplayProps {
 export function MapDisplay({ location }: MapDisplayProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  // Diagnostic log to help debug API key issues.
+  console.log('Attempting to use Google Maps API Key:', apiKey ? `"${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}"`: "Not Found");
+
+
   if (!apiKey) {
     return (
         <div className="flex flex-col items-center justify-center h-full bg-muted text-muted-foreground p-4">
