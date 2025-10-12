@@ -23,12 +23,12 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useTransition, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { MapDisplay } from './map-display';
+import Link from 'next/link';
 
 
 interface ReportDetailsDialogProps {
@@ -96,11 +96,20 @@ export function ReportDetailsDialog({
             </div>
              <div className='space-y-2'>
               <Label className="text-muted-foreground">Location</Label>
-              <p className="text-sm">
-                Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}
-              </p>
-              <div className="mt-2 relative aspect-video w-full rounded-md overflow-hidden border">
-                <MapDisplay location={report.location} />
+               <div className="flex items-center gap-4">
+                <p className="text-sm font-mono bg-muted/50 px-2 py-1 rounded">
+                  Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link 
+                    href={`https://www.google.com/maps/search/?api=1&query=${report.location.lat},${report.location.lng}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <MapPin className="mr-2 h-4 w-4" />
+                    View on Map
+                  </Link>
+                </Button>
               </div>
             </div>
             {report.resolvedImageUrl && (
