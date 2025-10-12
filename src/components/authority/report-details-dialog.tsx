@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { MapDisplay } from './map-display';
 
 
 interface ReportDetailsDialogProps {
@@ -71,7 +72,7 @@ export function ReportDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="font-headline">
             Report Details: {report.issueType}
@@ -90,8 +91,16 @@ export function ReportDetailsDialog({
                   alt={report.aiDescription}
                   fill
                   className="rounded-md object-cover"
-                  data-ai-hint={report.imageHint}
                 />
+              </div>
+            </div>
+             <div className='space-y-2'>
+              <Label className="text-muted-foreground">Location</Label>
+              <p className="text-sm">
+                Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}
+              </p>
+              <div className="mt-2 relative aspect-video w-full rounded-md overflow-hidden border">
+                <MapDisplay location={report.location} />
               </div>
             </div>
             {report.resolvedImageUrl && (
@@ -103,7 +112,6 @@ export function ReportDetailsDialog({
                         alt="Resolution image"
                         fill
                         className="rounded-md object-cover"
-                        data-ai-hint={report.resolvedImageHint}
                         />
                     </div>
                 </div>
@@ -122,13 +130,8 @@ export function ReportDetailsDialog({
                 {report.aiDescription}
               </p>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Location</Label>
-              <p className="text-sm">
-                Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}
-              </p>
-            </div>
-            <div className="space-y-2">
+           
+            <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="status">Update Status</Label>
                  <Select value={status} onValueChange={(value) => setStatus(value as Report['status'])}>
                     <SelectTrigger id="status">
