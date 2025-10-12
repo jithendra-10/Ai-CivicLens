@@ -41,30 +41,9 @@ const reportSchema = z.object({
   imageFile: z.instanceof(File).optional(),
   imageUrl: z.string().optional(),
   fingerprintKeywords: z.array(z.string()).optional(),
-  locationName: z.string().optional(),
 });
 
 type ReportFormValues = z.infer<typeof reportSchema>;
-
-async function fetchLocationName(lat: number, lng: number): Promise<string> {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.warn("Google Maps API key is missing.");
-      return "Unknown Location";
-    }
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === 'OK' && data.results[0]) {
-        return data.results[0].formatted_address;
-      }
-      return "Could not determine address";
-    } catch (error) {
-      console.error("Failed to fetch location name:", error);
-      return "Error fetching location name";
-    }
-}
 
 
 export function ReportForm() {
@@ -88,7 +67,6 @@ export function ReportForm() {
       severity: 'Medium',
       aiDescription: '',
       fingerprintKeywords: [],
-      locationName: '',
     },
   });
 
@@ -108,9 +86,14 @@ export function ReportForm() {
             title: 'Location Error',
             description: 'Could not get your location. Please enable location services.',
           });
-          // Fallback location
-          const fallbackLocation = { lat: 34.0522, lng: -118.2437 };
+          // Fallback location for development
+          const fallbackLocation = { lat: 41.8781, lng: -87.6298 };
           setLocation(fallbackLocation);
+          toast({
+            variant: 'default',
+            title: 'Using Fallback Location',
+            description: 'Using default coordinates for Chicago, USA.',
+          });
         }
       );
     }
@@ -139,17 +122,15 @@ export function ReportForm() {
           const photoDataUri = reader.result as string;
           form.setValue('imageUrl', photoDataUri);
           
-          const [reportResult, fingerprintResult, locationNameResult] = await Promise.all([
+          const [reportResult, fingerprintResult] = await Promise.all([
             generateCivicIssueReport({ photoDataUri, location }),
             generateImageFingerprint({ photoDataUri }),
-            fetchLocationName(location.lat, location.lng),
           ]);
           
           form.setValue('issueType', reportResult.issueType);
           form.setValue('severity', reportResult.severity as 'Low' | 'Medium' | 'High');
           form.setValue('aiDescription', reportResult.aiDescription);
           form.setValue('fingerprintKeywords', fingerprintResult.fingerprintKeywords);
-          form.setValue('locationName', locationNameResult);
           
           toast({
             title: 'AI Analysis Complete',
@@ -192,7 +173,6 @@ export function ReportForm() {
     form.setValue('imageFile', undefined);
     form.setValue('imageUrl', '');
     form.setValue('fingerprintKeywords', []);
-    form.setValue('locationName', '');
     form.setValue('issueType', '');
     form.setValue('severity', 'Medium');
     form.setValue('aiDescription', '');
@@ -214,7 +194,6 @@ export function ReportForm() {
             aiDescription: data.aiDescription,
             imageUrl: data.imageUrl,
             fingerprintKeywords: data.fingerprintKeywords,
-            locationName: data.locationName,
             imageHint: 'user uploaded',
             location: location,
             userId: user.uid,
@@ -339,23 +318,6 @@ export function ReportForm() {
               )}
             </div>
           </div>
-
-          <FormField
-            control={form.control}
-            name="locationName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., 123 Main St, Anytown, USA" {...field} />
-                </FormControl>
-                 <FormDescription>
-                  This address was automatically determined. You can edit it if needed.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={form.control}

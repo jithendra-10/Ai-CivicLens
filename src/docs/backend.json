@@ -93,10 +93,6 @@
             }
           }
         },
-        "locationName": {
-          "type": "string",
-          "description": "Human-readable name for the location, from reverse geocoding."
-        },
         "fingerprintKeywords": {
           "type": "array",
           "items": {

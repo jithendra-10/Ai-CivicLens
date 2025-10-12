@@ -28,7 +28,6 @@ export type Report = {
     lat: number;
     lng: number;
   };
-  locationName?: string;
   upvoteCount?: number;
   createdAt: string; // ISO string
 };
