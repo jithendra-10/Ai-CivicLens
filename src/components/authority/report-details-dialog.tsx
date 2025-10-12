@@ -96,6 +96,7 @@ export function ReportDetailsDialog({
             </div>
              <div className='space-y-2'>
               <Label className="text-muted-foreground">Location</Label>
+              <p className="text-sm font-semibold">{report.locationName || 'Location name not available'}</p>
                <div className="flex items-center gap-4">
                 <p className="text-sm font-mono bg-muted/50 px-2 py-1 rounded">
                   Lat: {report.location.lat.toFixed(4)}, Lng: {report.location.lng.toFixed(4)}

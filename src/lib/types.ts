@@ -28,5 +28,6 @@ export type Report = {
     lat: number;
     lng: number;
   };
+  locationName?: string;
   createdAt: string; // ISO string
 };
