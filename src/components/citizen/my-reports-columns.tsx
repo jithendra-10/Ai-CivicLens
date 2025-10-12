@@ -55,6 +55,9 @@ export const columns: ColumnDef<Report>[] = [
         </Badge>
       );
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     accessorKey: 'createdAt',

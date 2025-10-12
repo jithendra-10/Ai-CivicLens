@@ -6,6 +6,8 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getFilteredRowModel,
+  ColumnFiltersState,
   useReactTable,
 } from '@tanstack/react-table';
 
@@ -18,7 +20,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -29,20 +38,58 @@ export function MyReportsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>([]);
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-     initialState: {
-        pagination: {
-            pageSize: 5,
-        }
-    }
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
   });
 
   return (
     <div className="w-full">
+      <div className="flex items-center py-4 gap-2">
+        <Input
+          placeholder="Search by issue type..."
+          value={
+            (table.getColumn('issueType')?.getFilterValue() as string) ?? ''
+          }
+          onChange={(event) =>
+            table.getColumn('issueType')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <Select
+          value={(table.getColumn('status')?.getFilterValue() as string) ?? 'all'}
+          onValueChange={(value) =>
+            table
+              .getColumn('status')
+              ?.setFilterValue(value === 'all' ? undefined : value)
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="Submitted">Submitted</SelectItem>
+            <SelectItem value="In Progress">In Progress</SelectItem>
+            <SelectItem value="Resolved">Resolved</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -86,7 +133,7 @@ export function MyReportsTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  You haven't submitted any reports yet.
+                  No results found.
                 </TableCell>
               </TableRow>
             )}
@@ -95,7 +142,7 @@ export function MyReportsTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getRowModel().rows.length} report(s).
+          {table.getFilteredRowModel().rows.length} of {data.length} report(s).
         </div>
         <div className="space-x-2">
           <Button
