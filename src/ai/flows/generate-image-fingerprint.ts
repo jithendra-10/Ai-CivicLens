@@ -20,7 +20,7 @@ const GenerateImageFingerprintInputSchema = z.object({
 export type GenerateImageFingerprintInput = z.infer<typeof GenerateImageFingerprintInputSchema>;
 
 const GenerateImageFingerprintOutputSchema = z.object({
-  fingerprint: z.string().describe('A concise, keyword-based fingerprint of the image content, suitable for database queries.'),
+  fingerprintKeywords: z.array(z.string()).describe('An array of 3-5 keywords describing the main subject and its context.'),
 });
 export type GenerateImageFingerprintOutput = z.infer<typeof GenerateImageFingerprintOutputSchema>;
 
@@ -37,15 +37,14 @@ const fingerprintingPrompt = ai.definePrompt({
   output: { schema: GenerateImageFingerprintOutputSchema },
   prompt: `You are an AI assistant that creates a concise, descriptive 'fingerprint' for an image of a civic issue. 
   
-  The fingerprint should consist of 3-5 keywords describing the main subject and its immediate, distinct context. This will be used to find similar images in a database.
+  The fingerprint should be an array of 3-5 keywords describing the main subject and its immediate, distinct context. This will be used to find similar images in a database.
   
   Focus on the most permanent and objective features in the image. Avoid using colors or transient details.
   
-  Example Fingerprints:
-  - large pothole asphalt road crack
-  - graffiti brick wall alleyway
-  - overflowing trash can metal park
-  - broken streetlight metal pole sidewalk
+  Example Output Format:
+  {
+    "fingerprintKeywords": ["pothole", "asphalt", "road", "crack"]
+  }
 
   Image: {{media url=photoDataUri}}
   `,
