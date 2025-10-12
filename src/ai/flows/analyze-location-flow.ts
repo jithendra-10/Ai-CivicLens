@@ -36,19 +36,19 @@ const locationAnalysisPrompt = ai.definePrompt({
   name: 'locationAnalysisPrompt',
   input: { schema: AnalyzeLocationInputSchema },
   output: { schema: AnalyzeLocationOutputSchema },
-  prompt: `You are a helpful AI assistant specializing in geographic analysis.
-  
+  prompt: `You are an expert reverse geocoder. Your task is to provide a precise and accurate location name based on GPS coordinates.
+
   Given the following GPS coordinates:
   Latitude: {{{location.lat}}}
   Longitude: {{{location.lng}}}
 
-  1.  Provide a concise, human-readable name for this location. This could be a street address, an intersection, or a well-known landmark.
+  1.  Provide the most accurate and concise human-readable name for this location. Prioritize street addresses or specific intersections. Be as precise as possible.
   2.  Generate a "location fingerprint" consisting of 3-5 keywords that describe the location's context. Focus on permanent features like street names, intersections, landmarks, or neighborhood names. This fingerprint will be used to find similar locations.
 
   Example Output Format:
   {
-    "locationName": "Near 456 Oak Avenue, Springfield",
-    "locationFingerprintKeywords": ["oak avenue", "springfield", "residential", "park"]
+    "locationName": "123 Main St, Anytown, USA",
+    "locationFingerprintKeywords": ["main street", "anytown", "downtown", "intersection"]
   }
   `,
 });
