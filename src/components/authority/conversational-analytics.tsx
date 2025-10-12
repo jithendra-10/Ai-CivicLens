@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '../ui/scroll-area';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { cn } from '@/lib/utils';
+import { summarizeCivicIssues } from '@/ai/flows/summarize-civic-issue-reports';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -37,13 +38,32 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
 
         const newMessages: Message[] = [...messages, { role: 'user', content: input }];
         setMessages(newMessages);
+        const currentQuery = input;
         setInput('');
 
         startTransition(async () => {
-            // Placeholder for AI logic
-            setTimeout(() => {
-                setMessages(prev => [...prev, { role: 'assistant', content: "This is a placeholder response. The AI logic is not yet implemented." }]);
-            }, 1000);
+            try {
+                const relevantReports = reports.map(r => ({
+                    issueType: r.issueType,
+                    severity: r.severity,
+                    aiDescription: r.aiDescription,
+                    location: r.location,
+                    status: r.status,
+                    createdAt: r.createdAt,
+                }));
+                
+                const result = await summarizeCivicIssues({ reports: relevantReports, query: currentQuery });
+                setMessages(prev => [...prev, { role: 'assistant', content: result.summary }]);
+            } catch (error) {
+                console.error("AI analytics failed:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'AI Error',
+                    description: 'The AI assistant could not process your request.'
+                });
+                // Remove the user's message if the AI fails
+                setMessages(prev => prev.slice(0, prev.length -1));
+            }
         });
     };
     

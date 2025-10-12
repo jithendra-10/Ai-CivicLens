@@ -3,7 +3,7 @@
 /**
  * @fileOverview Summarizes civic issue reports for authorities.
  *
- * - summarizeCivicIssues - A function that summarizes civic issues based on provided reports and location.
+ * - summarizeCivicIssues - A function that summarizes civic issues based on provided reports and a user query.
  * - SummarizeCivicIssuesInput - The input type for the summarizeCivicIssues function.
  * - SummarizeCivicIssuesOutput - The return type for the summarizeCivicIssues function.
  */
@@ -21,14 +21,16 @@ const SummarizeCivicIssuesInputSchema = z.object({
         lat: z.number(),
         lng: z.number(),
       }),
+      status: z.string(),
+      createdAt: z.string(),
     })
   ).describe('An array of civic issue reports.'),
-  areaDescription: z.string().describe('A description of the area to summarize issues for.'),
+  query: z.string().describe('The user\'s question or prompt about the reports.'),
 });
 export type SummarizeCivicIssuesInput = z.infer<typeof SummarizeCivicIssuesInputSchema>;
 
 const SummarizeCivicIssuesOutputSchema = z.object({
-  summary: z.string().describe('A summary of the civic issues in the specified area, highlighting common complaints and high-severity issues.'),
+  summary: z.string().describe('A summary of the civic issues based on the user query, highlighting common complaints, high-severity issues, or specific report details.'),
 });
 export type SummarizeCivicIssuesOutput = z.infer<typeof SummarizeCivicIssuesOutputSchema>;
 
@@ -40,17 +42,20 @@ const summarizeCivicIssuesPrompt = ai.definePrompt({
   name: 'summarizeCivicIssuesPrompt',
   input: {schema: SummarizeCivicIssuesInputSchema},
   output: {schema: SummarizeCivicIssuesOutputSchema},
-  prompt: `You are a civic analyst summarizing reports for city authorities.
+  prompt: `You are a helpful civic analyst AI. Your task is to answer questions and provide summaries based on a list of civic issue reports.
 
-  You will receive a list of civic issue reports and a description of an area.
-  Your goal is to provide a concise summary of the reports, highlighting common issues, high-severity problems, and any notable trends in the specified area.
+  Analyze the user's query and the provided report data to give a concise and accurate response.
 
-  Area Description: {{{areaDescription}}}
+  Current Date: ${new Date().toISOString()}
 
-  Reports:
+  User Query: {{{query}}}
+
+  Report Data:
   {{#each reports}}
-  - Issue Type: {{{issueType}}}, Severity: {{{severity}}}, Description: {{{aiDescription}}}, Location: Lat: {{{location.lat}}}, Lng: {{{location.lng}}}
+  - Issue Type: {{{issueType}}}, Severity: {{{severity}}}, Status: {{{status}}}, Description: {{{aiDescription}}}, Location: (Lat: {{{location.lat}}}, Lng: {{{location.lng}}}), Created: {{{createdAt}}}
   {{/each}}
+
+  If the query is a greeting or not a question, respond politely. If asked for specific reports, list them clearly. If asked for a summary, provide a high-level overview.
   `,
 });
 
