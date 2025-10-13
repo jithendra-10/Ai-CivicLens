@@ -9,7 +9,7 @@ import {
   useUser,
   useAuth,
   useFirestore,
-  updateDocumentNonBlocking,
+  setDocumentNonBlocking,
 } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
@@ -32,7 +32,7 @@ import { User } from '@/lib/types';
 const profileSchema = z.object({
   fullName: z.string().min(3, 'Full name must be at least 3 characters.'),
   email: z.string().email(),
-  photoURL: z.string().optional(),
+  photoURL: z.string().url().optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -67,7 +67,7 @@ export function ProfileForm() {
         setImagePreview(user.photoURL);
       }
     }
-  }, [user, form]);
+  }, [user, form.reset]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -77,7 +77,7 @@ export function ProfileForm() {
       reader.onload = () => {
         const dataUri = reader.result as string;
         setImagePreview(dataUri);
-        form.setValue('photoURL', dataUri);
+        form.setValue('photoURL', dataUri, { shouldValidate: true });
       };
     }
   };
@@ -109,12 +109,19 @@ export function ProfileForm() {
           photoURL: data.photoURL,
         };
         
-        // Update Firebase Auth profile
-        await updateProfile(auth.currentUser!, profileUpdates);
+        // Update Firebase Auth profile first, as it might fail for large URIs
+        await updateProfile(auth.currentUser!, {
+          displayName: profileUpdates.displayName,
+          photoURL: profileUpdates.photoURL,
+        });
 
-        // Update Firestore document (non-blocking)
+        // Then, update Firestore document (non-blocking)
         const userDocRef = doc(firestore, 'users', user.uid);
-        updateDocumentNonBlocking(userDocRef, profileUpdates);
+        const firestoreUpdates = {
+            fullName: profileUpdates.displayName,
+            photoURL: profileUpdates.photoURL,
+        };
+        setDocumentNonBlocking(userDocRef, firestoreUpdates, { merge: true });
 
         toast({
           title: 'Profile Updated',
@@ -122,10 +129,14 @@ export function ProfileForm() {
         });
       } catch (error: any) {
         console.error('Profile update failed:', error);
+        let description = 'Could not update your profile. Please try again.';
+        if (error.code === 'auth/argument-error' && error.message.includes('auth/invalid-photo-url')) {
+            description = 'Upload failed. The image file might be too large. Please try a smaller image.';
+        }
         toast({
           variant: 'destructive',
           title: 'Update Failed',
-          description: 'Could not update your profile. Please try again.',
+          description: description,
         });
       }
     });
@@ -134,6 +145,13 @@ export function ProfileForm() {
   if (isUserLoading || !user) {
     return (
       <div className="space-y-8">
+        <div className="flex items-center gap-4">
+           <Skeleton className="h-20 w-20 rounded-full" />
+           <div className="space-y-2">
+             <Skeleton className="h-4 w-[250px]" />
+             <Skeleton className="h-4 w-[200px]" />
+           </div>
+        </div>
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-1/4" />
@@ -172,7 +190,7 @@ export function ProfileForm() {
           <div className="text-sm text-muted-foreground">
             Click the image to upload a new profile picture.
             <br />
-            Recommended size: 200x200px.
+            Recommended size: 200x200px. Max size ~1MB.
           </div>
         </div>
 
