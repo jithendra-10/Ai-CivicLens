@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Bot, BarChart, CheckCircle, Shield } from 'lucide-react';
+import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -13,10 +13,10 @@ export default function HomePage() {
         'Automatically categorize and assess the severity of civic issues using advanced AI analysis of user-uploaded photos.',
     },
     {
-      icon: <CheckCircle className="h-10 w-10 text-primary" />,
-      title: 'Full Transparency',
+      icon: <CopyCheck className="h-10 w-10 text-primary" />,
+      title: 'Duplicate Detection',
       description:
-        'Citizens and authorities get real-time tracking and updates for every reported issue, from submission to resolution.',
+        'Intelligent duplicate detection prevents multiple reports for the same issue, streamlining the process for authorities.',
     },
     {
       icon: <BarChart className="h-10 w-10 text-primary" />,
@@ -37,7 +37,7 @@ export default function HomePage() {
       step: 2,
       title: 'AI Processing',
       description:
-        'AI analyzes the image to categorize the issue and determine its severity.',
+        'AI analyzes the image to categorize the issue and checks for duplicates.',
     },
     {
       step: 3,
@@ -47,9 +47,9 @@ export default function HomePage() {
     },
     {
       step: 4,
-      title: 'Closure',
+      title: 'Get Notified',
       description:
-        'Citizens receive updates and confirmation when the issue is resolved.',
+        'Citizens receive real-time status updates and confirmation when the issue is resolved.',
     },
   ];
 
@@ -65,7 +65,7 @@ export default function HomePage() {
       label: 'AI Accuracy',
     },
     {
-      icon: <CheckCircle className="h-8 w-8 text-white" />,
+      icon: <Bell className="h-8 w-8 text-white" />,
       value: '100%',
       label: 'Transparency',
     },
