@@ -1,20 +1,21 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a user-ownership model for user profiles
- * and allows public read access to reports with owner-only write access.
+ * @description This ruleset enforces a user-ownership model for user profiles,
+ * allows authorities to read user profiles, and allows public read access to
+ * reports with owner-only write access.
  *
  * Data Structure:
  * - /users/{userId}: Stores user profile information.
  * - /reports/{reportId}: Stores civic issue reports.
  *
  * Key Security Decisions:
- * - Users can only read/write their own profile data.
+ * - Users can only read/write their own profile data, except authorities, who can read all user profiles.
  * - Reports are publicly readable but can only be created, updated, or deleted by the user who created them.
  * - User listing is disallowed.
  *
  * Denormalization for Authorization:
- * - The `Report` entity contains a `userId` field to identify the report's owner,
- *   enabling owner-only write rules without additional `get()` calls.
+ * - The Report entity contains a userId field to identify the report's owner,
+ *   enabling owner-only write rules without additional get() calls.
  *
  * Structural Segregation:
  * - Public reports and private user data are stored in separate top-level collections
@@ -28,14 +29,15 @@ service cloud.firestore {
      * @description Controls access to user profile data.
      * @path /users/{userId}
      * @allow (get) Authenticated user can read their own profile.
+     * @allow (get) Authenticated authority can read any user profile.
      * @allow (create) Authenticated user can create their own profile if the userId matches their auth.uid.
      * @allow (update) Authenticated user can update their own profile if the userId matches their auth.uid and the document exists.
      * @allow (delete) Authenticated user can delete their own profile if the userId matches their auth.uid and the document exists.
-     * @deny (get) Authenticated user cannot read another user's profile.
+     * @deny (get) Authenticated user cannot read another user's profile (unless they are an authority).
      * @deny (create) Authenticated user cannot create a profile with a userId that doesn't match their auth.uid.
      * @deny (update) Authenticated user cannot update another user's profile.
      * @deny (delete) Authenticated user cannot delete another user's profile.
-     * @principle Enforces document ownership for all operations.
+     * @principle Enforces document ownership for writes and allows authority read access.
      */
     match /users/{userId} {
       // Helper function to check if the user is signed in
@@ -53,7 +55,22 @@ service cloud.firestore {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
+      // Helper function to check if the user has the 'authority' role
+      function isAuthority() {
+        return request.auth.token.role == 'authority';
+      }
+
+       // Helper function to check if the user has the 'admin' role
+      function isAdmin() {
+        return request.auth.token.role == 'admin';
+      }
+
+      // Helper function to check if the user has the 'authority' or 'admin' role
+      function isAuthorityOrAdmin() {
+        return isAuthority() || isAdmin();
+      }
+
+      allow get: if isOwner(userId) || isAuthorityOrAdmin();
       allow list: if false;
 
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.uid == userId;
