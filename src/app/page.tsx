@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck } from 'lucide-react';
 import Link from 'next/link';
 import { WavyTimeline } from '@/components/wavy-timeline';
+import HeroAnimation from '@/components/hero-animation';
 
 
 export default function HomePage() {
@@ -64,7 +65,7 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="py-20 text-center animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <Shield className="mx-auto h-16 w-16 text-primary mb-4" />
+            <HeroAnimation />
             <h1 className="text-5xl font-bold font-headline tracking-tighter sm:text-6xl md:text-7xl">
               AI CivicLens
             </h1>
