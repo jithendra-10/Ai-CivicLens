@@ -108,7 +108,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid gap-8 md:grid-cols-3">
               {features.map((feature) => (
-                <Card key={feature.title} className="text-center shadow-lg">
+                <Card key={feature.title} className="text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                   <CardHeader>
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                       {feature.icon}
