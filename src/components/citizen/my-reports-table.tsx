@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from '../ui/select';
 import { Skeleton } from '../ui/skeleton';
+import { FilePlus2 } from 'lucide-react';
+import Link from 'next/link';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -175,11 +177,22 @@ export function MyReportsTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell
+                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-48 text-center"
                 >
-                  No results found.
+                  <div className="flex flex-col items-center gap-4">
+                    <FilePlus2 className="h-16 w-16 text-muted-foreground/50" />
+                    <div className="space-y-1">
+                      <h3 className="font-semibold">No reports yet</h3>
+                      <p className="text-muted-foreground text-sm">
+                        You haven't submitted any civic issues.
+                      </p>
+                    </div>
+                    <Button asChild>
+                      <Link href="/report">Report Your First Issue</Link>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

@@ -29,7 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Inbox } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -217,9 +217,17 @@ export function ReportsTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-48 text-center"
                 >
-                  No results.
+                  <div className="flex flex-col items-center gap-4">
+                    <Inbox className="h-16 w-16 text-muted-foreground/50" />
+                     <div className="space-y-1">
+                      <h3 className="font-semibold">All Clear!</h3>
+                      <p className="text-muted-foreground text-sm">
+                        There are no pending reports to review at this time.
+                      </p>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

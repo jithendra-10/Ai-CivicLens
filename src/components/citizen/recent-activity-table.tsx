@@ -11,8 +11,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import type { Report } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, FilePlus2 } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 const statusDisplay: {
   [key in Report['status']]: {
@@ -41,7 +43,18 @@ const statusDisplay: {
 
 export function RecentActivityTable({ reports }: { reports: Report[] }) {
   if (reports.length === 0) {
-    return <p className="text-muted-foreground text-center py-8">You haven't reported any issues yet.</p>
+    return (
+       <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg">
+        <FilePlus2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <h3 className="font-semibold">No Activity Yet</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Your recent report activity will show up here.
+        </p>
+        <Button asChild>
+          <Link href="/report">Report Your First Issue</Link>
+        </Button>
+      </div>
+    );
   }
   return (
     <Table>
