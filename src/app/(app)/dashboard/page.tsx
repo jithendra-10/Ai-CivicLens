@@ -24,6 +24,7 @@ import type { Report } from '@/lib/types';
 import { RecentActivityTable } from '@/components/citizen/recent-activity-table';
 import { StatCard } from '@/components/citizen/stat-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import AiAnimation from '@/components/ai-animation';
 
 function DashboardSkeleton() {
   return (
@@ -141,7 +142,7 @@ export default function CitizenDashboardPage() {
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                <BrainCircuit className="text-primary" />
+                <AiAnimation className="w-8 h-8" />
                 <span>AI Insight</span>
               </CardTitle>
             </CardHeader>

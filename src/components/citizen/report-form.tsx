@@ -33,6 +33,7 @@ import { useUser, useFirestore, addDocumentNonBlocking, updateDocumentNonBlockin
 import { collection, query, where, getDocs, doc, increment } from 'firebase/firestore';
 import type { Report } from '@/lib/types';
 import { DuplicateReportDialog } from './duplicate-report-dialog';
+import AiDataAnimation from '../ai-data-animation';
 
 const reportSchema = z.object({
   issueType: z.string().min(1, 'Issue type is required.'),
@@ -296,7 +297,7 @@ export function ReportForm() {
               )}
               {isAiLoading && (
                   <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center rounded-lg z-20">
-                      <LoaderCircle className="h-12 w-12 animate-spin text-primary"/>
+                      <AiDataAnimation />
                       <p className="mt-4 text-sm text-muted-foreground">AI is analyzing the image...</p>
                   </div>
               )}
