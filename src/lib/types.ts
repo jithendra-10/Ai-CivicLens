@@ -6,6 +6,10 @@ export interface User {
   fullName: string;
   role: Role;
   photoURL?: string;
+  neighborhood?: string;
+  communicationPreferences?: {
+    emailOnStatusChange?: boolean;
+  };
   createdAt: string; // ISO string
 }
 

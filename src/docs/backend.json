@@ -28,6 +28,20 @@
           "type": "string",
           "description": "User's role within the system ('citizen' or 'authority')."
         },
+        "neighborhood": {
+          "type": "string",
+          "description": "The default neighborhood or area for a citizen user."
+        },
+        "communicationPreferences": {
+          "type": "object",
+          "description": "User's preferences for receiving notifications.",
+          "properties": {
+            "emailOnStatusChange": {
+              "type": "boolean",
+              "description": "Receive an email when a reported issue's status is updated."
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp of when the user was created.",
