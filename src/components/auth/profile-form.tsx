@@ -67,7 +67,7 @@ export function ProfileForm() {
         setImagePreview(user.photoURL);
       }
     }
-  }, [user, form.reset]);
+  }, [user, form]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -104,22 +104,16 @@ export function ProfileForm() {
 
     startTransition(async () => {
       try {
-        const profileUpdates = {
-          displayName: data.fullName,
-          photoURL: data.photoURL,
-        };
-        
-        // Update Firebase Auth profile first, as it might fail for large URIs
+        // Update Firebase Auth profile displayName
         await updateProfile(auth.currentUser!, {
-          displayName: profileUpdates.displayName,
-          photoURL: profileUpdates.photoURL,
+          displayName: data.fullName,
         });
 
         // Then, update Firestore document (non-blocking)
         const userDocRef = doc(firestore, 'users', user.uid);
         const firestoreUpdates = {
-            fullName: profileUpdates.displayName,
-            photoURL: profileUpdates.photoURL,
+            fullName: data.fullName,
+            photoURL: data.photoURL,
         };
         setDocumentNonBlocking(userDocRef, firestoreUpdates, { merge: true });
 
@@ -130,7 +124,7 @@ export function ProfileForm() {
       } catch (error: any) {
         console.error('Profile update failed:', error);
         let description = 'Could not update your profile. Please try again.';
-        if (error.code === 'auth/argument-error' && error.message.includes('auth/invalid-photo-url')) {
+        if (error.code === 'auth/invalid-photo-url') {
             description = 'Upload failed. The image file might be too large. Please try a smaller image.';
         }
         toast({
@@ -165,7 +159,7 @@ export function ProfileForm() {
         <div className="flex items-center gap-4">
           <div className="relative group">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={imagePreview || undefined} alt={user?.displayName || ''} />
+              <AvatarImage src={imagePreview || user.photoURL || undefined} alt={user?.displayName || ''} />
               <AvatarFallback className="text-2xl">
                 {user.displayName ? getInitials(user.displayName) : <UserIcon />}
               </AvatarFallback>
