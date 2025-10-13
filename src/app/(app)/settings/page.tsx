@@ -47,7 +47,8 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProfileForm appUser={appUser} />
+            {/* The appUser prop is now guaranteed to be available */}
+            <ProfileForm key={appUser.uid} appUser={appUser} />
           </CardContent>
         </Card>
         <Card>

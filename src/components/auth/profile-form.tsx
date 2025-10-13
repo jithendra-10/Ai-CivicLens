@@ -3,11 +3,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTransition, useEffect, useRef } from 'react';
+import { useTransition, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
   useUser,
-  useAuth,
   useFirestore,
   setDocumentNonBlocking,
 } from '@/firebase';
@@ -25,7 +24,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { LoaderCircle, User as UserIcon, Camera } from 'lucide-react';
-import { Skeleton } from '../ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { User } from '@/lib/types';
 import { Separator } from '../ui/separator';
@@ -50,8 +48,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfileForm({ appUser }: { appUser: User }) {
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
+  const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, startTransition] = useTransition();
@@ -71,29 +68,11 @@ export function ProfileForm({ appUser }: { appUser: User }) {
       department: appUser.department || '',
       jobTitle: appUser.jobTitle || '',
     },
-    disabled: isUserLoading || !user,
   });
 
-  const { watch, setValue, reset } = form;
+  const { watch, setValue } = form;
   const imagePreview = watch('photoURL');
-
-  useEffect(() => {
-    if (appUser) {
-      reset({
-        fullName: appUser.fullName || '',
-        email: appUser.email || '',
-        photoURL: appUser.photoURL || '',
-        neighborhood: appUser.neighborhood || '',
-        communicationPreferences: {
-          emailOnStatusChange:
-            appUser.communicationPreferences?.emailOnStatusChange || false,
-        },
-        department: appUser.department || '',
-        jobTitle: appUser.jobTitle || '',
-      });
-    }
-  }, [appUser, reset]);
-
+  
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -116,7 +95,7 @@ export function ProfileForm({ appUser }: { appUser: User }) {
   };
 
   const onSubmit = (data: ProfileFormValues) => {
-    if (!user || !auth.currentUser || !firestore) {
+    if (!user || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -132,10 +111,6 @@ export function ProfileForm({ appUser }: { appUser: User }) {
           photoURL: data.photoURL,
         };
         
-        if (data.fullName !== auth.currentUser?.displayName) {
-          // This call is fine, as it only updates non-sensitive metadata
-        }
-
         if (appUser.role === 'citizen') {
           firestoreUpdates.neighborhood = data.neighborhood;
           firestoreUpdates.communicationPreferences =
@@ -147,7 +122,6 @@ export function ProfileForm({ appUser }: { appUser: User }) {
           firestoreUpdates.jobTitle = data.jobTitle;
         }
 
-        // Then, update Firestore document (non-blocking)
         const userDocRef = doc(firestore, 'users', user.uid);
         setDocumentNonBlocking(userDocRef, firestoreUpdates, { merge: true });
 
@@ -171,23 +145,6 @@ export function ProfileForm({ appUser }: { appUser: User }) {
     });
   };
 
-  if (isUserLoading || !user) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-20 w-20 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-          </div>
-        </div>
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-1/4" />
-      </div>
-    );
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -196,11 +153,11 @@ export function ProfileForm({ appUser }: { appUser: User }) {
             <Avatar className="h-20 w-20">
               <AvatarImage
                 src={imagePreview || undefined}
-                alt={user?.displayName || ''}
+                alt={appUser.fullName || ''}
               />
               <AvatarFallback className="text-2xl">
-                {user.displayName ? (
-                  getInitials(user.displayName)
+                {appUser.fullName ? (
+                  getInitials(appUser.fullName)
                 ) : (
                   <UserIcon />
                 )}
@@ -226,7 +183,7 @@ export function ProfileForm({ appUser }: { appUser: User }) {
           <div className="text-sm text-muted-foreground">
             Click the image to upload a new profile picture.
             <br />
-            Recommended size: 200x200px. Max size ~1MB.
+            Recommended size: 200x200px. Max size ~700KB.
           </div>
         </div>
 
