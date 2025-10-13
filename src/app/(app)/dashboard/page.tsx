@@ -100,7 +100,7 @@ export default function CitizenDashboardPage() {
     .slice(0, 5);
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-headline text-primary">
           AI CivicLens Dashboard

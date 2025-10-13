@@ -87,7 +87,7 @@ export default function HomePage() {
 
       <main>
         {/* Hero Section */}
-        <section className="py-20 text-center">
+        <section className="py-20 text-center animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <Shield className="mx-auto h-16 w-16 text-primary mb-4" />
             <h1 className="text-5xl font-bold font-headline tracking-tighter sm:text-6xl md:text-7xl">
@@ -105,7 +105,7 @@ export default function HomePage() {
 
         {/* Features Section */}
         <section id="features" className="py-20 bg-muted/50">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
             <div className="grid gap-8 md:grid-cols-3">
               {features.map((feature) => (
                 <Card key={feature.title} className="text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
@@ -128,7 +128,7 @@ export default function HomePage() {
 
         {/* How It Works Section */}
         <section id="how-it-works" className="py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-300">
             <h2 className="text-center text-4xl font-bold font-headline mb-12">
               How It Works
             </h2>
@@ -151,7 +151,7 @@ export default function HomePage() {
 
         {/* Stats Section */}
         <section className="bg-primary text-primary-foreground py-16">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-400">
                 <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
                 {stats.map((stat) => (
                     <div key={stat.label}>
@@ -166,7 +166,7 @@ export default function HomePage() {
 
 
         {/* CTA Section */}
-        <section className="py-20 text-center">
+        <section className="py-20 text-center animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-500">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold font-headline">
               Ready to transform civic engagement?
