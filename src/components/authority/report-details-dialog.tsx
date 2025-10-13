@@ -8,7 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Report } from '@/lib/types';
+import { Report, User } from '@/lib/types';
 import Image from 'next/image';
 import { Badge } from '../ui/badge';
 import { Label } from '../ui/label';
@@ -21,14 +21,15 @@ import {
 } from '../ui/select';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle, MapPin, ThumbsUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
+import { sendStatusUpdateNotification } from '@/ai/flows/send-status-update-notification';
 
 interface ReportDetailsDialogProps {
   report: Report;
@@ -48,6 +49,19 @@ export function ReportDetailsDialog({
   const router = useRouter();
   const firestore = useFirestore();
 
+  const citizenUserRef = useMemoFirebase(
+    () => (firestore && report.userId ? doc(firestore, 'users', report.userId) : null),
+    [firestore, report.userId]
+  );
+  
+  const { data: citizenUser } = useDoc<User>(citizenUserRef);
+
+  // Reset status when a new report is viewed
+  useEffect(() => {
+    setStatus(report.status);
+  }, [report]);
+
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResolutionPhoto(e.target.files[0]);
@@ -63,6 +77,8 @@ export function ReportDetailsDialog({
       });
       return;
     }
+
+    const statusChanged = status !== report.status;
 
     if (status === 'Resolved' && !resolutionPhoto && !report.resolvedImageUrl) {
       toast({
@@ -86,6 +102,27 @@ export function ReportDetailsDialog({
       
       let updateData: { status: Report['status'], resolvedImageUrl?: string } = { status };
 
+      const updateAndNotify = () => {
+        updateDocumentNonBlocking(reportRef, updateData);
+        toast({ title: 'Success', description: 'Report status updated.' });
+        
+        // Trigger notification if status changed and user has opted in
+        if (statusChanged && citizenUser?.communicationPreferences?.emailOnStatusChange) {
+           sendStatusUpdateNotification({
+              recipientEmail: citizenUser.email,
+              reportId: report.id!,
+              newStatus: status,
+              issueType: report.issueType
+           }).then((res) => {
+              console.log("Notification flow result:", res.message);
+              toast({ title: 'Notification Sent', description: `An update email was sent to ${citizenUser.email}.` });
+           });
+        }
+
+        setIsOpen(false);
+        router.refresh();
+      }
+
       if (resolutionPhoto) {
         // Convert image to data URI
         const reader = new FileReader();
@@ -93,20 +130,14 @@ export function ReportDetailsDialog({
         reader.onload = () => {
             const dataUri = reader.result as string;
             updateData.resolvedImageUrl = dataUri;
-            updateDocumentNonBlocking(reportRef, updateData);
-            toast({ title: 'Success', description: 'Report status updated.' });
-            setIsOpen(false);
-            router.refresh();
+            updateAndNotify();
         };
         reader.onerror = (error) => {
             console.error("Error converting file to data URI:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not process image file.' });
         }
       } else {
-        updateDocumentNonBlocking(reportRef, updateData);
-        toast({ title: 'Success', description: 'Report status updated.' });
-        setIsOpen(false);
-        router.refresh();
+        updateAndNotify();
       }
     });
   };
