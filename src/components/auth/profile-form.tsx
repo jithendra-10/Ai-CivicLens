@@ -52,7 +52,7 @@ export function ProfileForm() {
             email: user.email || '',
         });
     }
-  }, [user, form]);
+  }, [user, form.reset]);
 
 
   const onSubmit = (data: ProfileFormValues) => {
