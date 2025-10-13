@@ -39,6 +39,10 @@ export default function SidebarNavigation({ user }: { user: User }) {
     { href: '/authority/reports', label: 'Recent Reports', icon: FileClock },
   ];
 
+  const commonNav = [
+    { href: '/settings', label: 'Settings', icon: Settings },
+  ]
+
   const navItems = user.role === 'citizen' ? citizenNav : authorityNav;
 
   const handleLogout = async () => {
@@ -74,6 +78,20 @@ export default function SidebarNavigation({ user }: { user: User }) {
       </SidebarContent>
       <SidebarFooter className="p-2">
         <SidebarMenu>
+          {commonNav.map((item) => (
+             <SidebarMenuItem key={item.href}>
+             <SidebarMenuButton
+               asChild
+               isActive={pathname === item.href}
+               tooltip={item.label}
+             >
+               <Link href={item.href}>
+                 <item.icon />
+                 <span>{item.label}</span>
+               </Link>
+             </SidebarMenuButton>
+           </SidebarMenuItem>
+          ))}
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Log Out" onClick={handleLogout}>
               <LogOut />
