@@ -36,10 +36,16 @@ const profileSchema = z.object({
   fullName: z.string().min(3, 'Full name must be at least 3 characters.'),
   email: z.string().email(),
   photoURL: z.string().url().optional().or(z.literal('')),
+  // Citizen fields
   neighborhood: z.string().optional(),
-  communicationPreferences: z.object({
-    emailOnStatusChange: z.boolean().optional(),
-  }).optional(),
+  communicationPreferences: z
+    .object({
+      emailOnStatusChange: z.boolean().optional(),
+    })
+    .optional(),
+  // Authority fields
+  department: z.string().optional(),
+  jobTitle: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -55,20 +61,38 @@ export function ProfileForm({ appUser }: { appUser: User }) {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: appUser.fullName || '',
-      email: appUser.email || '',
-      photoURL: appUser.photoURL || '',
-      neighborhood: appUser.neighborhood || '',
+      fullName: '',
+      email: '',
+      photoURL: '',
+      neighborhood: '',
       communicationPreferences: {
-        emailOnStatusChange: appUser.communicationPreferences?.emailOnStatusChange || false,
+        emailOnStatusChange: false,
       },
+      department: '',
+      jobTitle: '',
     },
     disabled: isUserLoading || !user,
   });
 
-  const { watch, setValue } = form;
+  const { watch, setValue, reset } = form;
   const imagePreview = watch('photoURL');
 
+  useEffect(() => {
+    if (appUser) {
+      reset({
+        fullName: appUser.fullName || '',
+        email: appUser.email || '',
+        photoURL: appUser.photoURL || '',
+        neighborhood: appUser.neighborhood || '',
+        communicationPreferences: {
+          emailOnStatusChange:
+            appUser.communicationPreferences?.emailOnStatusChange || false,
+        },
+        department: appUser.department || '',
+        jobTitle: appUser.jobTitle || '',
+      });
+    }
+  }, [appUser, reset]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -109,15 +133,21 @@ export function ProfileForm({ appUser }: { appUser: User }) {
             displayName: data.fullName,
           });
         }
-        
+
         const firestoreUpdates: Partial<User> = {
           fullName: data.fullName,
           photoURL: data.photoURL,
         };
 
-        if(appUser.role === 'citizen') {
-            firestoreUpdates.neighborhood = data.neighborhood;
-            firestoreUpdates.communicationPreferences = data.communicationPreferences;
+        if (appUser.role === 'citizen') {
+          firestoreUpdates.neighborhood = data.neighborhood;
+          firestoreUpdates.communicationPreferences =
+            data.communicationPreferences;
+        }
+
+        if (appUser.role === 'authority') {
+          firestoreUpdates.department = data.department;
+          firestoreUpdates.jobTitle = data.jobTitle;
         }
 
         // Then, update Firestore document (non-blocking)
@@ -229,12 +259,12 @@ export function ProfileForm({ appUser }: { appUser: User }) {
             </FormItem>
           )}
         />
-        
+
         {appUser.role === 'citizen' && (
           <>
             <Separator />
             <h3 className="text-lg font-medium">Citizen Settings</h3>
-             <FormField
+            <FormField
               control={form.control}
               name="neighborhood"
               render={({ field }) => (
@@ -243,35 +273,77 @@ export function ProfileForm({ appUser }: { appUser: User }) {
                   <FormControl>
                     <Input placeholder="e.g., Downtown, Northwood" {...field} />
                   </FormControl>
-                   <FormDescription>
-                    Set your primary neighborhood to see relevant local updates. (Optional)
+                  <FormDescription>
+                    Set your primary neighborhood to see relevant local
+                    updates. (Optional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
-                control={form.control}
-                name="communicationPreferences.emailOnStatusChange"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Email Notifications
-                      </FormLabel>
-                      <FormDescription>
-                        Receive an email when the status of a report you submitted changes.
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="communicationPreferences.emailOnStatusChange"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Email Notifications</FormLabel>
+                    <FormDescription>
+                      Receive an email when the status of a report you submitted
+                      changes.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+
+        {appUser.role === 'authority' && (
+          <>
+            <Separator />
+            <h3 className="text-lg font-medium">Authority Settings</h3>
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Department</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Public Works"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Your department within the city council. (Optional)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="jobTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Field Inspector" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Your official title. (Optional)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </>
         )}
 

@@ -42,6 +42,14 @@
             }
           }
         },
+        "department": {
+          "type": "string",
+          "description": "The department an authority user belongs to (e.g., 'Public Works')."
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "The job title of an authority user (e.g., 'Field Inspector')."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp of when the user was created.",
