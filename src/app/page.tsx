@@ -3,6 +3,8 @@ import Logo from '@/components/logo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck } from 'lucide-react';
 import Link from 'next/link';
+import { WavyTimeline } from '@/components/wavy-timeline';
+
 
 export default function HomePage() {
   const features = [
@@ -23,33 +25,6 @@ export default function HomePage() {
       title: 'Insightful Analytics',
       description:
         'Gain valuable insights into issue patterns with AI-powered summaries to help predict and prevent future problems.',
-    },
-  ];
-
-  const howItWorks = [
-    {
-      step: 1,
-      title: 'Report Issue',
-      description:
-        'Citizens report civic issues by uploading a photo and location.',
-    },
-    {
-      step: 2,
-      title: 'AI Processing',
-      description:
-        'AI analyzes the image to categorize the issue and checks for duplicates.',
-    },
-    {
-      step: 3,
-      title: 'Action Taken',
-      description:
-        'Authorities review the AI-assisted report and take action to resolve it.',
-    },
-    {
-      step: 4,
-      title: 'Get Notified',
-      description:
-        'Citizens receive real-time status updates and confirmation when the issue is resolved.',
     },
   ];
 
@@ -127,27 +102,7 @@ export default function HomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-300">
-            <h2 className="text-center text-4xl font-bold font-headline mb-12">
-              How It Works
-            </h2>
-            <div className="relative">
-                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2" aria-hidden="true"></div>
-                <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-                    {howItWorks.map((item) => (
-                    <div key={item.step} className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xl">
-                        {item.step}
-                        </div>
-                        <h3 className="text-xl font-headline font-semibold mb-2">{item.title}</h3>
-                        <p className="text-muted-foreground">{item.description}</p>
-                    </div>
-                    ))}
-                </div>
-            </div>
-          </div>
-        </section>
+        <WavyTimeline />
 
         {/* Stats Section */}
         <section className="bg-primary text-primary-foreground py-16">
