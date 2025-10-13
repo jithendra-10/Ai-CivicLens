@@ -42,7 +42,7 @@ export default function AppLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <Sidebar>
         <SidebarNavigation user={appUser} />
       </Sidebar>
