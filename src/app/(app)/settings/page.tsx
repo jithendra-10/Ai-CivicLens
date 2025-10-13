@@ -1,4 +1,5 @@
 import { ProfileForm } from '@/components/auth/profile-form';
+import { PasswordChangeForm } from '@/components/auth/password-change-form';
 import {
   Card,
   CardContent,
@@ -16,17 +17,30 @@ export default function SettingsPage() {
           Manage your account and profile settings.
         </p>
       </div>
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="font-headline">My Profile</CardTitle>
-          <CardDescription>
-            Update your personal information. Your email address cannot be changed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProfileForm />
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">My Profile</CardTitle>
+            <CardDescription>
+              Update your personal information. Your email address cannot be changed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProfileForm />
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Change Password</CardTitle>
+            <CardDescription>
+              Update your account password. It's recommended to use a strong, unique password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PasswordChangeForm />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
