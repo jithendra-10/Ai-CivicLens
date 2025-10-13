@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTransition } from 'react';
+import { useTransition, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useAuth, useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
@@ -38,15 +38,25 @@ export function ProfileForm() {
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    values: {
-        fullName: user?.displayName || '',
-        email: user?.email || '',
+    defaultValues: {
+        fullName: '',
+        email: '',
     },
     disabled: isUserLoading || !user
   });
 
+  useEffect(() => {
+    if (user) {
+        form.reset({
+            fullName: user.displayName || '',
+            email: user.email || '',
+        });
+    }
+  }, [user, form]);
+
+
   const onSubmit = (data: ProfileFormValues) => {
-    if (!user || !firestore) {
+    if (!user || !auth.currentUser || !firestore) {
         toast({
             variant: 'destructive',
             title: 'Error',
@@ -58,7 +68,7 @@ export function ProfileForm() {
     startTransition(async () => {
         try {
             // Update Firebase Auth profile
-            await updateProfile(user, { displayName: data.fullName });
+            await updateProfile(auth.currentUser, { displayName: data.fullName });
 
             // Update Firestore document (non-blocking)
             const userDocRef = doc(firestore, 'users', user.uid);
@@ -121,7 +131,7 @@ export function ProfileForm() {
           )}
         />
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <LoaderCircle className="animate-spin" />}
+          {isSubmitting && <LoaderCircle className="mr-2 animate-spin" />}
           Save Changes
         </Button>
       </form>
