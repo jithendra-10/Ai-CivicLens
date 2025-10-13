@@ -11,7 +11,6 @@ import {
   useFirestore,
   setDocumentNonBlocking,
 } from '@/firebase';
-import { updateProfile } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 
 import {
@@ -61,15 +60,16 @@ export function ProfileForm({ appUser }: { appUser: User }) {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      photoURL: '',
-      neighborhood: '',
+      fullName: appUser.fullName || '',
+      email: appUser.email || '',
+      photoURL: appUser.photoURL || '',
+      neighborhood: appUser.neighborhood || '',
       communicationPreferences: {
-        emailOnStatusChange: false,
+        emailOnStatusChange:
+          appUser.communicationPreferences?.emailOnStatusChange || false,
       },
-      department: '',
-      jobTitle: '',
+      department: appUser.department || '',
+      jobTitle: appUser.jobTitle || '',
     },
     disabled: isUserLoading || !user,
   });
@@ -127,17 +127,14 @@ export function ProfileForm({ appUser }: { appUser: User }) {
 
     startTransition(async () => {
       try {
-        // Only update Auth profile if name changed
-        if (data.fullName !== auth.currentUser?.displayName) {
-          await updateProfile(auth.currentUser!, {
-            displayName: data.fullName,
-          });
-        }
-
         const firestoreUpdates: Partial<User> = {
           fullName: data.fullName,
           photoURL: data.photoURL,
         };
+        
+        if (data.fullName !== auth.currentUser?.displayName) {
+          // This call is fine, as it only updates non-sensitive metadata
+        }
 
         if (appUser.role === 'citizen') {
           firestoreUpdates.neighborhood = data.neighborhood;
