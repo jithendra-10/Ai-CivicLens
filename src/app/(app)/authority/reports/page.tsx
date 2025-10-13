@@ -5,7 +5,6 @@ import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { ReportsTable } from '@/components/authority/reports-table';
 import { columns } from '@/components/authority/columns';
-import Loading from '@/app/loading';
 import {
   Card,
   CardContent,
@@ -27,10 +26,6 @@ export default function AuthorityReportsPage() {
 
   const { data: reports, isLoading } = useCollection<Report>(reportsQuery);
 
-  if (isLoading || !reports) {
-    return <Loading />;
-  }
-
   return (
     <div className="container mx-auto">
        <div className="mb-8">
@@ -47,7 +42,7 @@ export default function AuthorityReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ReportsTable columns={columns} data={reports} />
+          <ReportsTable columns={columns} data={reports || []} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

@@ -37,15 +37,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { Skeleton } from '../ui/skeleton';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading?: boolean;
+}
+
+function DataTableSkeleton<TData, TValue>({ columns }: { columns: ColumnDef<TData, TValue>[] }) {
+  return (
+    <div className="w-full animate-pulse">
+        <div className="flex items-center py-4 gap-2">
+            <Skeleton className="h-10 w-[180px]" />
+            <Skeleton className="h-10 w-32 ml-auto" />
+        </div>
+        <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.id || Math.random()}>
+                   {column.id !== 'actions' && <Skeleton className="h-5 w-24" />}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(10)].map((_, i) => (
+              <TableRow key={i}>
+                {columns.map((column) => (
+                  <TableCell key={column.id || Math.random()}>
+                    <Skeleton className="h-6 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        </div>
+         <div className="flex items-center justify-end space-x-2 py-4">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+        </div>
+    </div>
+  )
 }
 
 export function ReportsTable<TData, TValue>({
   columns,
   data,
+  isLoading
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -81,6 +123,11 @@ export function ReportsTable<TData, TValue>({
         }
     }
   });
+
+  if (isLoading) {
+    return <DataTableSkeleton columns={columns} />;
+  }
+
 
   return (
     <div className="w-full">

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Report } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 const statusDisplay: {
   [key in Report['status']]: {
@@ -74,4 +75,16 @@ export function RecentActivityTable({ reports }: { reports: Report[] }) {
       </TableBody>
     </Table>
   );
+}
+
+RecentActivityTable.Skeleton = function RecentActivityTableSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  )
 }

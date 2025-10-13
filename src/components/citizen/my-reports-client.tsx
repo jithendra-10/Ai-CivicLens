@@ -4,7 +4,6 @@ import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Report } from '@/lib/types';
-import Loading from '@/app/loading';
 import { MyReportsTable } from './my-reports-table';
 import { columns } from './my-reports-columns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,10 +25,7 @@ export function MyReportsClient() {
   );
 
   const { data: reports, isLoading: isReportsLoading } = useCollection<Report>(reportsQuery);
-
-  if (isUserLoading || isReportsLoading || !reports) {
-    return <Loading />;
-  }
+  const isLoading = isUserLoading || isReportsLoading;
 
   return (
     <Card>
@@ -38,7 +34,7 @@ export function MyReportsClient() {
             <CardDescription>A list of all the civic issues you have submitted.</CardDescription>
         </CardHeader>
         <CardContent>
-            <MyReportsTable columns={columns} data={reports} />
+            <MyReportsTable columns={columns} data={reports || []} isLoading={isLoading} />
         </CardContent>
     </Card>
   );

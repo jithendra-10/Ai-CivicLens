@@ -21,9 +21,54 @@ import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Report } from '@/lib/types';
-import Loading from '@/app/loading';
 import { RecentActivityTable } from '@/components/citizen/recent-activity-table';
 import { StatCard } from '@/components/citizen/stat-card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function DashboardSkeleton() {
+  return (
+    <div className="container mx-auto animate-pulse">
+      <div className="mb-8">
+        <Skeleton className="h-9 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <StatCard.Skeleton />
+        <StatCard.Skeleton />
+        <StatCard.Skeleton />
+        <StatCard.Skeleton />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-1/3 mb-2" />
+              <Skeleton className="h-4 w-2/3" />
+            </CardHeader>
+            <CardContent>
+              <RecentActivityTable.Skeleton />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <Card>
+            <CardHeader>
+               <Skeleton className="h-6 w-1/3 mb-2" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+               <Skeleton className="h-4 w-3/4" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CitizenDashboardPage() {
   const { user } = useUser();
@@ -43,7 +88,7 @@ export default function CitizenDashboardPage() {
   const { data: reports, isLoading } = useCollection<Report>(reportsQuery);
 
   if (isLoading || !reports) {
-    return <Loading />;
+    return <DashboardSkeleton />;
   }
 
   const total = reports.length;

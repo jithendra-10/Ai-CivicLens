@@ -3,11 +3,44 @@
 import type { Report } from '@/lib/types';
 import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import Loading from '@/app/loading';
 import { StatCard } from './stat-card';
 import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { ConversationalAnalytics } from './conversational-analytics';
 import { IssueTypeChart } from './issue-type-chart';
+import { Skeleton } from '../ui/skeleton';
+import { Card, CardContent, CardHeader } from '../ui/card';
+
+function AnalyticsDashboardSkeleton() {
+    return (
+        <div className="space-y-4 animate-pulse">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <StatCard.Skeleton />
+                <StatCard.Skeleton />
+                <StatCard.Skeleton />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3 mb-2" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-56 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3 mb-2" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-56 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+}
 
 export function AnalyticsDashboard() {
   const firestore = useFirestore();
@@ -23,7 +56,7 @@ export function AnalyticsDashboard() {
   const { data: reports, isLoading } = useCollection<Report>(reportsQuery);
 
   if (isLoading || !reports) {
-    return <Loading />;
+    return <AnalyticsDashboardSkeleton />;
   }
 
   const total = reports.length;
