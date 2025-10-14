@@ -76,6 +76,16 @@ export function ProfileForm({ appUser }: { appUser: User }) {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check file size (700KB limit)
+      if (file.size > 700 * 1024) {
+        toast({
+          variant: 'destructive',
+          title: 'Image Too Large',
+          description: 'Please upload an image smaller than 700KB.',
+        });
+        return;
+      }
+      
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
@@ -148,14 +158,14 @@ export function ProfileForm({ appUser }: { appUser: User }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="flex items-center gap-4">
+        <div className="flex justify-center">
           <div className="relative group">
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-24 w-24">
               <AvatarImage
                 src={imagePreview || undefined}
                 alt={appUser.fullName || ''}
               />
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="text-3xl">
                 {appUser.fullName ? (
                   getInitials(appUser.fullName)
                 ) : (
@@ -170,7 +180,7 @@ export function ProfileForm({ appUser }: { appUser: User }) {
               className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 rounded-full h-full w-full"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Camera className="h-8 w-8" />
+              <Camera className="h-10 w-10" />
             </Button>
             <Input
               ref={fileInputRef}
@@ -179,11 +189,6 @@ export function ProfileForm({ appUser }: { appUser: User }) {
               accept="image/png, image/jpeg, image/gif"
               onChange={handleImageChange}
             />
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Click the image to upload a new profile picture.
-            <br />
-            Recommended size: 200x200px. Max size ~700KB.
           </div>
         </div>
 
