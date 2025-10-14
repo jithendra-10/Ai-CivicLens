@@ -76,3 +76,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+@layer utilities {
+  @keyframes ai-pulse {
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+  .animate-ai-pulse {
+    animation: ai-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}

@@ -17,6 +17,7 @@ import {
   Settings,
   FileClock,
   History,
+  Sparkles,
 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import Link from 'next/link';
@@ -54,7 +55,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
     <>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2">
-          <Logo className="w-8 h-8 text-primary" />
+          <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
           <span className="text-xl font-headline font-semibold">CivicAI</span>
         </Link>
       </SidebarHeader>

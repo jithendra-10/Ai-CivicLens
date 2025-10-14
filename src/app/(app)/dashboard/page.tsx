@@ -16,6 +16,7 @@ import {
   BarChart,
   BrainCircuit,
   History,
+  Sparkles,
 } from 'lucide-react';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
@@ -102,7 +103,7 @@ export default function CitizenDashboardPage() {
   return (
     <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       <div className="mb-8 flex items-center gap-2">
-        <BrainCircuit className="w-8 h-8 text-primary" />
+        <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
         <div>
           <h1 className="text-3xl font-bold font-headline text-primary">
             AI CivicLens Dashboard
@@ -144,7 +145,7 @@ export default function CitizenDashboardPage() {
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                <BrainCircuit className="w-6 h-6" />
+                <Sparkles className="w-6 h-6 animate-ai-pulse" />
                 <span>AI Insight</span>
               </CardTitle>
             </CardHeader>

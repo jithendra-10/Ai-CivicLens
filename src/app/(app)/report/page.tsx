@@ -1,12 +1,12 @@
 import { ReportForm } from '@/components/citizen/report-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BrainCircuit } from 'lucide-react';
+import { ScanSearch } from 'lucide-react';
 
 export default function ReportPage() {
   return (
     <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
        <div className="mb-8 flex items-center gap-2">
-        <BrainCircuit className="w-8 h-8 text-primary" />
+        <ScanSearch className="w-8 h-8 text-primary animate-ai-pulse" />
         <div>
           <h1 className="text-3xl font-bold font-headline">Report a New Issue</h1>
           <p className="text-muted-foreground">

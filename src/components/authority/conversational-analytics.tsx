@@ -4,7 +4,7 @@ import { useState, useTransition, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { BrainCircuit, LoaderCircle, Send, User as UserIcon, Sparkles } from 'lucide-react';
+import { Bot, LoaderCircle, Send, User as UserIcon } from 'lucide-react';
 import type { Report } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '../ui/scroll-area';
@@ -77,7 +77,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
         <Card className="bg-primary/5 border-primary/20 h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
-                    <BrainCircuit className="text-primary" />
+                    <Bot className="text-primary animate-ai-pulse" />
                     <span>AI Analytics Assistant</span>
                 </CardTitle>
                 <CardDescription>
@@ -89,7 +89,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                     <div className="space-y-4 h-full">
                         {messages.length === 0 ? (
                              <div className="flex flex-col items-center justify-center text-center p-4 border-dashed border-2 border-muted-foreground/30 rounded-lg h-full">
-                                <BrainCircuit className="w-24 h-24 text-primary opacity-50 mb-4" />
+                                <Bot className="w-24 h-24 text-primary opacity-50 mb-4 animate-ai-pulse" />
                                 <p className="text-sm text-muted-foreground mb-4">
                                     Ask anything about the civic reports. For example:
                                 </p>
@@ -112,7 +112,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                                 >
                                     {message.role === 'assistant' && (
                                         <Avatar className="w-8 h-8 bg-primary text-primary-foreground flex-shrink-0">
-                                            <AvatarFallback><BrainCircuit size={18} /></AvatarFallback>
+                                            <AvatarFallback><Bot size={18} /></AvatarFallback>
                                         </Avatar>
                                     )}
                                     <div
