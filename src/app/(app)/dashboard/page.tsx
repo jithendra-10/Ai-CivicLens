@@ -145,7 +145,7 @@ export default function CitizenDashboardPage() {
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                <Sparkles className="w-6 h-6 animate-ai-pulse" />
+                <BrainCircuit className="w-6 h-6 text-primary animate-ai-pulse" />
                 <span>AI Insight</span>
               </CardTitle>
             </CardHeader>
