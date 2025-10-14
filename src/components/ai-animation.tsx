@@ -1,10 +1,14 @@
 'use client';
 
 import Lottie from 'lottie-react';
-import animationData from '@/../public/animations/hero-animation.json';
+import { aiAnimationData } from '@/lib/animations/ai';
 
 const AiAnimation = ({ className }: { className?: string }) => {
-  return <Lottie animationData={animationData} loop={true} className={className} />;
+  return (
+    <div className={className}>
+      <Lottie animationData={aiAnimationData} loop={true} className="w-full h-full" />
+    </div>
+  );
 };
 
 export default AiAnimation;
