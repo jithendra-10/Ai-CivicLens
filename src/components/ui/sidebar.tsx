@@ -168,7 +168,7 @@ const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible: collapsibleProp = "offcanvas",
       className,
       children,
       ...props
@@ -176,6 +176,7 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const collapsible = isMobile ? "offcanvas" : collapsibleProp
 
     if (collapsible === "none") {
       return (
