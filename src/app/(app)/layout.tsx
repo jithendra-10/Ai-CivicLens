@@ -13,6 +13,7 @@ import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as AppUser } from '@/lib/types';
 import Loading from '@/app/loading';
+import { cn } from '@/lib/utils';
 
 export default function AppLayout({
   children,
@@ -41,15 +42,19 @@ export default function AppLayout({
     return <Loading />;
   }
 
+  const isAuthority = appUser.role === 'authority';
+
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar>
         <SidebarNavigation user={appUser} />
       </Sidebar>
-      <SidebarInset>
-        <AppHeader user={appUser} />
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </SidebarInset>
+      <div className={cn('flex-1', isAuthority && 'dark bg-background text-foreground')}>
+        <SidebarInset>
+          <AppHeader user={appUser} />
+          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

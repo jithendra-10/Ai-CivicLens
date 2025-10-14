@@ -34,7 +34,7 @@ export default function AuthorityReportsPage() {
           View, update, and resolve all submitted civic issues.
         </p>
       </div>
-      <Card>
+      <Card className="rounded-lg shadow">
         <CardHeader>
           <CardTitle>All Submitted Reports</CardTitle>
           <CardDescription>

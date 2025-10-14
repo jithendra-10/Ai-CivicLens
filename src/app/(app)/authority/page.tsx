@@ -3,7 +3,7 @@ import { BrainCircuit } from 'lucide-react';
 
 export default async function AuthorityDashboardPage() {
   return (
-    <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+    <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500 bg-card p-6 rounded-lg shadow">
       <div className="mb-8 flex items-center gap-2">
         <BrainCircuit className="w-8 h-8 text-primary/80 animate-ai-pulse" />
         <div>
