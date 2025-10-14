@@ -50,7 +50,6 @@ export function PasswordChangeForm() {
       newPassword: '',
       confirmPassword: '',
     },
-    disabled: !auth?.currentUser,
   });
 
   const onSubmit = (data: PasswordFormValues) => {
@@ -116,7 +115,7 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>Current Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input type="password" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,7 +128,7 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input type="password" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -142,7 +141,7 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>Confirm New Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input type="password" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
