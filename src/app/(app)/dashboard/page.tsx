@@ -24,7 +24,6 @@ import type { Report } from '@/lib/types';
 import { RecentActivityTable } from '@/components/citizen/recent-activity-table';
 import { StatCard } from '@/components/citizen/stat-card';
 import { Skeleton } from '@/components/ui/skeleton';
-import AiAnimation from '@/components/ai-animation';
 
 function DashboardSkeleton() {
   return (
@@ -102,13 +101,16 @@ export default function CitizenDashboardPage() {
 
   return (
     <div className="container mx-auto animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline text-primary">
-          AI CivicLens Dashboard
-        </h1>
-        <p className="text-muted-foreground">
-          Your personal hub for civic engagement.
-        </p>
+      <div className="mb-8 flex items-center gap-2">
+        <BrainCircuit className="w-8 h-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-bold font-headline text-primary">
+            AI CivicLens Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Your personal hub for civic engagement.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -142,7 +144,7 @@ export default function CitizenDashboardPage() {
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                <AiAnimation className="w-8 h-8" />
+                <BrainCircuit className="w-6 h-6" />
                 <span>AI Insight</span>
               </CardTitle>
             </CardHeader>

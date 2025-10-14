@@ -27,13 +27,12 @@ import { useToast } from '@/hooks/use-toast';
 import { generateCivicIssueReport } from '@/ai/flows/generate-civic-issue-report';
 import { generateImageFingerprint } from '@/ai/flows/generate-image-fingerprint';
 import Image from 'next/image';
-import { LoaderCircle, UploadCloud, X } from 'lucide-react';
+import { LoaderCircle, UploadCloud, X, BrainCircuit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, where, getDocs, doc, increment } from 'firebase/firestore';
 import type { Report } from '@/lib/types';
 import { DuplicateReportDialog } from './duplicate-report-dialog';
-import AiDataAnimation from '../ai-data-animation';
 
 const reportSchema = z.object({
   issueType: z.string().min(1, 'Issue type is required.'),
@@ -297,7 +296,7 @@ export function ReportForm() {
               )}
               {isAiLoading && (
                   <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center rounded-lg z-20">
-                      <AiDataAnimation />
+                      <BrainCircuit className="w-16 h-16 text-primary animate-pulse" />
                       <p className="mt-4 text-sm text-muted-foreground">AI is analyzing the image...</p>
                   </div>
               )}

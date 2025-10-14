@@ -11,7 +11,6 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { cn } from '@/lib/utils';
 import { summarizeCivicIssues } from '@/ai/flows/summarize-civic-issue-reports';
-import AiAnimation from '../ai-animation';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -90,7 +89,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                     <div className="space-y-4 h-full">
                         {messages.length === 0 ? (
                              <div className="flex flex-col items-center justify-center text-center p-4 border-dashed border-2 border-muted-foreground/30 rounded-lg h-full">
-                                <AiAnimation className="w-24 h-24 text-primary mb-4" />
+                                <BrainCircuit className="w-24 h-24 text-primary opacity-50 mb-4" />
                                 <p className="text-sm text-muted-foreground mb-4">
                                     Ask anything about the civic reports. For example:
                                 </p>
