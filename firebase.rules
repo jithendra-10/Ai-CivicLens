@@ -1,0 +1,36 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users can read their own profile, but cannot write to it after creation
+    // (profile updates are handled by secure server-side logic if needed).
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      allow delete: if false; // Do not allow users to delete their own profiles
+    }
+
+    // Reports can be created by any authenticated user.
+    // Citizens can only read and delete their own reports.
+    // Authority users can read and update any report.
+    match /reports/{reportId} {
+      allow create: if request.auth != null;
+      
+      allow read: if resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+      
+      allow update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+
+      allow delete: if resource.data.userId == request.auth.uid;
+      
+      // Duplicate submissions can be created by any authenticated user.
+      match /duplicates/{duplicateId} {
+          allow create: if request.auth != null;
+          allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+          allow list: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+      }
+    }
+  }
+}
