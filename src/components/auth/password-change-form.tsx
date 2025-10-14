@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import {
@@ -15,6 +15,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,13 +23,27 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Eye, EyeOff } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+
+const passwordValidation = z
+  .string()
+  .min(8, 'Password must be at least 8 characters long.')
+  .refine(
+    (password) => {
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumber = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*]/.test(password);
+      return [hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar].filter(Boolean).length >= 2;
+    },
+    'Password must contain at least 2 of: uppercase, lowercase, number, or special character.'
+  );
 
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required.'),
-    newPassword: z.string().min(6, 'New password must be at least 6 characters.'),
+    newPassword: passwordValidation,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -42,6 +57,9 @@ export function PasswordChangeForm() {
   const auth = useAuth();
   const { toast } = useToast();
   const [isSubmitting, startTransition] = useTransition();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -67,7 +85,7 @@ export function PasswordChangeForm() {
       try {
         // Re-authenticate the user first
         const credential = EmailAuthProvider.credential(
-          user.email,
+          user.email!,
           data.currentPassword
         );
         await reauthenticateWithCredential(user, credential);
@@ -94,17 +112,6 @@ export function PasswordChangeForm() {
     });
   };
 
-  if (!auth?.currentUser) {
-    return (
-      <div className="space-y-8">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-1/4" />
-      </div>
-    );
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -115,7 +122,21 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>Current Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} disabled={isSubmitting} />
+                <div className="relative">
+                  <Input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    {...field}
+                    disabled={isSubmitting}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 px-3 flex items-center text-muted-foreground"
+                  >
+                    {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -128,8 +149,25 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} disabled={isSubmitting} />
+                 <div className="relative">
+                  <Input
+                    type={showNewPassword ? 'text' : 'password'}
+                    {...field}
+                    disabled={isSubmitting}
+                     className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 px-3 flex items-center text-muted-foreground"
+                  >
+                    {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </FormControl>
+              <FormDescription>
+                8+ characters with at least two of: letters, numbers, special characters.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -141,7 +179,21 @@ export function PasswordChangeForm() {
             <FormItem>
               <FormLabel>Confirm New Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} disabled={isSubmitting} />
+                 <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    {...field}
+                    disabled={isSubmitting}
+                     className="pr-10"
+                  />
+                   <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 px-3 flex items-center text-muted-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

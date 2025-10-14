@@ -32,10 +32,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Eye, EyeOff } from 'lucide-react';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -43,10 +44,28 @@ import {
 } from '@/components/ui/form';
 import type { Role } from '@/lib/types';
 
+const passwordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters.')
+  .refine(
+    (password) => {
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumber = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*]/.test(password);
+      const typesCount = [hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar].filter(Boolean).length;
+      return typesCount >= 2;
+    },
+    {
+      message:
+        'Password must contain at least two of the following: uppercase letters, lowercase letters, numbers, or special characters.',
+    }
+  );
+
 const registerSchema = z.object({
   fullName: z.string().min(3, 'Full name must be at least 3 characters.'),
   email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
+  password: passwordSchema,
   role: z.enum(['citizen', 'authority'], {
     required_error: 'Please select a role.',
   }),
@@ -60,6 +79,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -183,12 +203,25 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          {...field}
-                          disabled={isSubmitting}
-                        />
+                         <div className="relative">
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            {...field}
+                            disabled={isSubmitting}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 px-3 flex items-center text-muted-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
                       </FormControl>
+                      <FormDescription>
+                        8+ characters with at least two of: letters, numbers, special characters.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
