@@ -13,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ icon: Icon, title, value, description }: StatCardProps) {
   return (
-    <Card className="transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <Card className="transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -28,7 +28,7 @@ export function StatCard({ icon: Icon, title, value, description }: StatCardProp
 
 StatCard.Skeleton = function StatCardSkeleton() {
   return (
-    <Card>
+    <Card className="rounded-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-4 rounded-full" />

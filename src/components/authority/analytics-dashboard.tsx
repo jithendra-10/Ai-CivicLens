@@ -19,7 +19,7 @@ function AnalyticsDashboardSkeleton() {
                 <StatCard.Skeleton />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card>
+                <Card className="rounded-lg">
                     <CardHeader>
                         <Skeleton className="h-6 w-1/3 mb-2" />
                         <Skeleton className="h-4 w-2/3" />
@@ -28,7 +28,7 @@ function AnalyticsDashboardSkeleton() {
                         <Skeleton className="h-56 w-full" />
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="rounded-lg">
                     <CardHeader>
                         <Skeleton className="h-6 w-1/3 mb-2" />
                         <Skeleton className="h-4 w-2/3" />
