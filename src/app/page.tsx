@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck } from 'lucide-react';
+import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { WavyTimeline } from '@/components/wavy-timeline';
 import HeroAnimation from '@/components/hero-animation';
@@ -48,11 +48,11 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="bg-background text-foreground">
+    <div className="dark bg-background text-foreground">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
-            <Logo className="h-8 w-8 text-primary" />
+            <Sparkles className="h-8 w-8 text-primary animate-ai-pulse" />
             <span className="text-2xl font-bold font-headline">CivicAI</span>
           </Link>
           <Button asChild>
@@ -84,7 +84,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
             <div className="grid gap-8 md:grid-cols-3">
               {features.map((feature) => (
-                <Card key={feature.title} className="text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                <Card key={feature.title} className="text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-background/50">
                   <CardHeader>
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                       {feature.icon}
@@ -106,7 +106,7 @@ export default function HomePage() {
         <WavyTimeline />
 
         {/* Stats Section */}
-        <section className="bg-primary text-primary-foreground py-16">
+        <section className="bg-secondary/50 text-secondary-foreground py-16">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-400">
                 <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
                 {stats.map((stat) => (
@@ -137,7 +137,7 @@ export default function HomePage() {
        <footer className="border-t">
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 py-8 px-4 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-             <Logo className="h-6 w-6 text-primary" />
+             <Sparkles className="h-6 w-6 text-primary" />
              <span className="font-semibold font-headline">CivicAI</span>
           </div>
           <p className="text-sm text-muted-foreground">
