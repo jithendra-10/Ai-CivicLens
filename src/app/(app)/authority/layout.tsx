@@ -38,5 +38,5 @@ export default function AuthorityLayout({
   }
 
   // If the user is an authority, render the requested page
-  return <>{children}</>;
+  return <div className="dark bg-background text-foreground">{children}</div>;
 }

@@ -74,10 +74,10 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
     ]
 
     return (
-        <Card className="bg-primary/5 border-primary/20 h-full flex flex-col">
+        <Card className="h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
-                    <Bot className="text-primary animate-ai-pulse" />
+                    <Bot className="text-primary/80 animate-ai-pulse" />
                     <span>AI Analytics Assistant</span>
                 </CardTitle>
                 <CardDescription>
@@ -89,7 +89,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                     <div className="space-y-4 h-full">
                         {messages.length === 0 ? (
                              <div className="flex flex-col items-center justify-center text-center p-4 border-dashed border-2 border-muted-foreground/30 rounded-lg h-full">
-                                <Bot className="w-24 h-24 text-primary opacity-50 mb-4 animate-ai-pulse" />
+                                <Bot className="w-24 h-24 text-primary/30 mb-4" />
                                 <p className="text-sm text-muted-foreground mb-4">
                                     Ask anything about the civic reports. For example:
                                 </p>
@@ -119,8 +119,8 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                                         className={cn(
                                             'p-3 rounded-lg max-w-sm',
                                             message.role === 'user'
-                                                ? 'bg-primary/90 text-primary-foreground'
-                                                : 'bg-background border'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-card-foreground/5'
                                         )}
                                     >
                                         <p className="text-sm">{message.content}</p>
