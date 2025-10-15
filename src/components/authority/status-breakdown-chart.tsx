@@ -83,7 +83,7 @@ export function StatusBreakdownChart({ reports }: { reports: Report[] }) {
             >
               {chartData.map((entry) => (
                 <Cell
-                  key={entry.status}
+                  key={`cell-${entry.status}`}
                   fill={chartConfig[entry.status]?.color}
                   stroke={chartConfig[entry.status]?.color}
                 />
@@ -93,12 +93,12 @@ export function StatusBreakdownChart({ reports }: { reports: Report[] }) {
               content={({ payload }) => {
                 return (
                   <ul className="grid gap-2 grid-cols-3">
-                    {payload?.map((item) => {
+                    {payload?.map((item, index) => {
                         const { name, color, payload: itemPayload } = item;
                         const Icon = chartConfig[name]?.icon;
                         const value = itemPayload?.value;
                       return (
-                        <li key={name} className="flex items-center gap-2 text-sm font-medium">
+                        <li key={`item-${name}-${index}`} className="flex items-center gap-2 text-sm font-medium">
                           <span className="flex h-2 w-2 shrink-0 rounded-full" style={{backgroundColor: color}} />
                           <div className="flex-1 truncate">{name} ({value})</div>
                         </li>
