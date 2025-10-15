@@ -19,10 +19,9 @@ import { eachDayOfInterval, format, startOfWeek, endOfWeek, subWeeks, isSameDay 
 import { CalendarDays } from 'lucide-react';
 
 const WEEK_COUNT = 16;
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function getColor(count: number): string {
-    if (count === 0) return 'bg-muted/50';
+    if (count === 0) return 'bg-muted/50 dark:bg-muted/20';
     if (count < 2) return 'bg-blue-300 dark:bg-blue-800';
     if (count < 4) return 'bg-blue-400 dark:bg-blue-600';
     if (count < 6) return 'bg-blue-500 dark:bg-blue-500';
@@ -58,12 +57,8 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-2">
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground pt-4">
-                {DAY_LABELS.map(day => <div key={day} className="h-3 leading-none">{day}</div>)}
-            </div>
-            <div className="grid grid-cols-16 grid-rows-7 gap-1">
-            <TooltipProvider>
+        <TooltipProvider>
+            <div className="flex flex-wrap gap-1">
                 {data.map(({ date, count }) => (
                 <Tooltip key={date} delayDuration={0}>
                     <TooltipTrigger asChild>
@@ -76,9 +71,8 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
                     </TooltipContent>
                 </Tooltip>
                 ))}
-            </TooltipProvider>
             </div>
-        </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
