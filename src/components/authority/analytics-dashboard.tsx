@@ -64,13 +64,13 @@ export function AnalyticsDashboard() {
   const resolved = reports.filter(r => r.status === 'Resolved').length;
 
   return (
-    <div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="-mx-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 px-8">
             <StatCard icon={FileText} title="Total Reports" value={total} variant="blue" />
-            <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" variant="yellow" />
+            <StatCard icon={Clock} title="Pending" description="Submitted & In Progress" variant="yellow" />
             <StatCard icon={CheckCircle} title="Resolved" value={resolved} variant="green" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 bg-background p-8 rounded-3xl">
             <IssueTypeChart reports={reports} />
             <ConversationalAnalytics reports={reports} />
         </div>

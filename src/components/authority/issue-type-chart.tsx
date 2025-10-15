@@ -41,7 +41,7 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
   };
 
   return (
-    <Card className="h-full rounded-lg">
+    <Card className="h-full rounded-lg shadow-lg">
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
             <TrendingUp className="text-primary" />
