@@ -30,7 +30,7 @@ import {
 import { CalendarDays } from 'lucide-react';
 
 const WEEK_COUNT = 16;
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'Th', 'F', 'S'];
 
 function getColor(count: number): string {
   if (count === 0) return 'bg-muted/50 dark:bg-muted/30';
@@ -80,14 +80,9 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
         <TooltipProvider>
           <div className="flex gap-2 items-start">
             <div className="flex flex-col gap-1 mt-6 text-xs text-muted-foreground">
-               {DAY_LABELS.map((label, index) => {
-                // Render M, W, F on odd indices
-                if (index % 2 !== 0) {
-                  return <div key={`${label}-${index}`}>{label}</div>
-                }
-                // Render an empty div for even indices to create spacing
-                return <div key={`${label}-${index}`} className="h-3 w-3" />
-               })}
+               {DAY_LABELS.map((label, index) => (
+                <div key={`${label}-${index}`}>{label}</div>
+               ))}
             </div>
             <div className="flex flex-col gap-1 overflow-x-auto pb-2">
                <div className="grid grid-flow-col gap-x-6">
