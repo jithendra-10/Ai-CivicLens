@@ -77,11 +77,10 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
         <TooltipProvider>
           <div className="flex gap-2">
             <div className="flex flex-col gap-1">
-              {DAY_LABELS.map((label, index) => (
+              {DAY_LABELS.map((label) => (
                 <div
                   key={label}
                   className="text-xs text-muted-foreground text-center"
-                  style={{ visibility: index % 2 === 0 ? 'visible' : 'hidden' }}
                 >
                   {label}
                 </div>
