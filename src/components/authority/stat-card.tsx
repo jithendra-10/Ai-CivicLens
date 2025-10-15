@@ -25,7 +25,7 @@ export function StatCard({ icon: Icon, title, value, description, variant = 'blu
 
   return (
     <Card className={cn(
-        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl',
+        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl text-primary-foreground',
         variants[variant]
       )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

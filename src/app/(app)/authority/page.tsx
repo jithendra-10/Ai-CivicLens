@@ -8,7 +8,7 @@ export default async function AuthorityDashboardPage() {
           <div className="mb-8 flex items-center gap-2">
             <BrainCircuit className="w-8 h-8 text-primary/80 animate-ai-pulse" />
             <div>
-              <h1 className="text-3xl font-bold font-headline text-primary-foreground dark:text-background">Authority Dashboard</h1>
+              <h1 className="text-3xl font-bold font-headline">Authority Dashboard</h1>
               <p className="text-muted-foreground">
                 Analyze, manage, and resolve civic issues reported by citizens.
               </p>

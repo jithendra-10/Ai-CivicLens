@@ -99,12 +99,6 @@ export default function LoginPage() {
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline"
-                  >
-                    Forgot password?
-                  </Link>
                 </div>
                 <Input
                   id="password"
@@ -114,6 +108,14 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
                 />
+                 <div className="text-right">
+                    <Link
+                    href="/forgot-password"
+                    className="inline-block text-sm underline"
+                  >
+                    Forgot password?
+                  </Link>
+                  </div>
               </div>
               <Button onClick={handleLogin} className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
