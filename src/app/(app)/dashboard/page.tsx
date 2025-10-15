@@ -123,21 +123,25 @@ export default function CitizenDashboardPage() {
             icon={FileText}
             title="Total Reports"
             value={total}
+            variant="blue"
           />
           <StatCard
             icon={AlertTriangle}
             title="Submitted"
             value={submitted}
+            variant="yellow"
           />
           <StatCard
             icon={Clock}
             title="In Progress"
             value={inProgress}
+            variant="green"
           />
           <StatCard
             icon={FileCheck}
             title="Resolved"
             value={resolved}
+            variant="red"
           />
         </div>
       </div>
