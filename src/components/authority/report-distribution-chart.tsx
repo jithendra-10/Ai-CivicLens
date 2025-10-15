@@ -23,11 +23,6 @@ import {
   subWeeks,
   isSameDay,
   getDay,
-  startOfMonth,
-  isSameMonth,
-  isFirstDayOfMonth,
-  getWeekOfMonth,
-  differenceInCalendarWeeks,
 } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 
@@ -53,27 +48,26 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       isSameDay(new Date(report.createdAt), day)
     ).length,
   }));
+  
+  const startingDayOfWeek = getDay(days[0].date);
 
-  // Group days by week
-  const weeks: (typeof data)[] = [];
-  for (let i = 0; i < data.length; i += 7) {
-    weeks.push(data.slice(i, i + 7));
-  }
+  const monthLabels = data
+    .map((d, i) => {
+      const isFirstOfWeek = (i + startingDayOfWeek) % 7 === 0;
+      const isFirstOfMonthOrFirstDay = i === 0 || d.date.getDate() === 1;
 
-  // Generate month labels with correct positioning
-  const monthLabels = weeks
-    .map((week, weekIndex) => {
-      const firstDay = week[0]?.date;
-      if (!firstDay || !isFirstDayOfMonth(firstDay) && weekIndex > 0 && !isSameMonth(firstDay, weeks[weekIndex-1][0].date)) {
-        return null;
+      if ((isFirstOfWeek || isFirstOfMonthOrFirstDay) && d.date.getDate() <= 7) {
+        return {
+          label: format(d.date, 'MMM'),
+          // Calculate the grid column start
+          column: Math.floor((i + startingDayOfWeek) / 7) + 2, 
+        };
       }
-      return {
-        label: format(firstDay, 'MMM'),
-        weekIndex: weekIndex,
-      };
+      return null;
     })
-    .filter(Boolean) as { label: string, weekIndex: number }[];
-
+    .filter((item, index, self) => 
+        item !== null && self.findIndex(t => t?.label === item.label && t?.column === item.column) === index
+    ) as { label: string; column: number }[];
 
   return (
     <Card>
@@ -88,49 +82,46 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-          <div className="flex flex-col gap-2">
-             {/* Month Labels */}
-            <div className="grid grid-cols-16 gap-1.5 pl-8">
-              {monthLabels.map(({ label, weekIndex }) => (
-                <div
-                  key={label + weekIndex}
-                  style={{ gridColumn: weekIndex + 1 }}
-                  className="text-xs text-muted-foreground"
-                >
-                  {label}
-                </div>
-              ))}
+          <div className="grid grid-flow-col gap-x-1.5" style={{ gridTemplateColumns: `auto repeat(${WEEK_COUNT}, 1fr)`}}>
+            {/* Day labels column */}
+            <div className="grid grid-rows-7 gap-y-1.5 text-xs text-muted-foreground self-center mt-6">
+                {DAY_LABELS.map((label, index) => (
+                  <div key={label + index} className="h-3 flex items-center">{label}</div>
+                ))}
             </div>
 
-            <div className="flex gap-4">
-              {/* Day Labels */}
-              <div className="grid grid-rows-7 gap-1.5 text-xs text-muted-foreground">
-                {DAY_LABELS.map((label, index) => (
-                  <div key={index} className="h-3.5 flex items-center">{label}</div>
-                ))}
-              </div>
+            {/* Month labels will be positioned using the grid-column property */}
+            {monthLabels.map(({ label, column }) => (
+                <div key={label} className="text-xs text-muted-foreground" style={{ gridColumn: column, gridRow: 1 }}>
+                    {label}
+                </div>
+            ))}
+            
+            {/* Heatmap grid */}
+            <div className="grid grid-flow-col grid-rows-7 gap-1 col-start-2 col-span-16 mt-6">
+              {/* Spacer divs to align the first day correctly */}
+              {Array.from({ length: startingDayOfWeek }).map((_, i) => (
+                <div key={`spacer-${i}`} />
+              ))}
 
-              {/* Heatmap Grid */}
-              <div className="grid grid-flow-col grid-rows-7 gap-1.5">
-                {data.map((dayData) => (
-                  <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={cn(
-                          'h-3.5 w-3.5 rounded-sm',
-                          getColor(dayData.count)
-                        )}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
-                        {format(dayData.date, 'MMM d, yyyy')}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
+              {data.map((dayData) => (
+                <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        'h-3 w-3 rounded-sm',
+                        getColor(dayData.count)
+                      )}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">
+                      {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
+                      {format(dayData.date, 'MMM d, yyyy')}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </div>
         </TooltipProvider>
