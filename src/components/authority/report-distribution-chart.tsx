@@ -15,10 +15,11 @@ import {
 } from '@/components/ui/tooltip';
 import type { Report } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { eachDayOfInterval, format, startOfWeek, endOfWeek, subWeeks, isSameDay } from 'date-fns';
+import { eachDayOfInterval, format, startOfWeek, endOfWeek, subWeeks, isSameDay, getDay } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 
 const WEEK_COUNT = 16;
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function getColor(count: number): string {
     if (count === 0) return 'bg-muted/50 dark:bg-muted/20';
@@ -30,11 +31,12 @@ function getColor(count: number): string {
 
 export function ReportDistributionChart({ reports }: { reports: Report[] }) {
   const today = new Date();
-  const weekStart = startOfWeek(subWeeks(today, WEEK_COUNT - 1));
-  const weekEnd = endOfWeek(today);
+  // Ensure we get a full 16 weeks by starting from the beginning of the week
+  const weekStart = startOfWeek(subWeeks(today, WEEK_COUNT -1));
 
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
+  const days = eachDayOfInterval({ start: weekStart, end: today });
+  
+  // Create an array of day data with report counts
   const data = days.map((day) => {
     const count = reports.filter((report) =>
       isSameDay(new Date(report.createdAt), day)
@@ -42,8 +44,16 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
     return {
       date: format(day, 'yyyy-MM-dd'),
       count,
+      dayOfWeek: getDay(day), // 0 for Sunday, 6 for Saturday
     };
   });
+
+  // Create placeholder elements for the start of the grid if the first day is not a Sunday
+  const firstDayOfWeek = data[0]?.dayOfWeek || 0;
+  const placeholders = Array.from({ length: firstDayOfWeek }).map((_, i) => (
+    <div key={`placeholder-${i}`} className="h-3 w-3" />
+  ));
+
 
   return (
     <Card>
@@ -58,20 +68,24 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-            <div className="flex flex-wrap gap-1">
-                {data.map(({ date, count }) => (
-                <Tooltip key={date} delayDuration={0}>
-                    <TooltipTrigger asChild>
-                    <div className={cn("h-3 w-3 rounded-sm", getColor(count))} />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                    <p className="text-sm">
-                        {count} report{count !== 1 ? 's' : ''} on {format(new Date(date), 'MMM d, yyyy')}
-                    </p>
-                    </TooltipContent>
-                </Tooltip>
-                ))}
-            </div>
+          <div className="grid grid-flow-col grid-rows-8 gap-1">
+             {DAY_LABELS.map((label) => (
+                <div key={label} className="text-xs text-muted-foreground text-center row-start-1">{label}</div>
+            ))}
+            {placeholders}
+            {data.map(({ date, count }) => (
+              <Tooltip key={date} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div className={cn("h-3 w-3 rounded-sm", getColor(count))} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">
+                    {count} report{count !== 1 ? 's' : ''} on {format(new Date(date), 'MMM d, yyyy')}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
         </TooltipProvider>
       </CardContent>
     </Card>
