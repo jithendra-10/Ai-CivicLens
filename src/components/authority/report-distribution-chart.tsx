@@ -25,8 +25,9 @@ import {
   getDay,
   startOfMonth,
   isSameMonth,
-  getMonth,
   isFirstDayOfMonth,
+  getWeekOfMonth,
+  differenceInCalendarWeeks,
 } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 
@@ -48,24 +49,31 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
 
   const data = days.map((day) => ({
     date: day,
-    count: reports.filter((report) => isSameDay(new Date(report.createdAt), day)).length,
+    count: reports.filter((report) =>
+      isSameDay(new Date(report.createdAt), day)
+    ).length,
   }));
-  
-  // Calculate placeholder days needed for the first week
-  const firstDayOfWeek = getDay(data[0].date); // 0 for Sunday, 1 for Monday...
-  const placeholders = Array.from({ length: firstDayOfWeek });
 
-  const monthLabels = data
-    .filter((day, index) => isFirstDayOfMonth(day.date) || index === 0)
-    .map((day, index, arr) => {
-        const nextMonthStart = index + 1 < arr.length ? getDay(arr[index + 1].date) + (7 * (WEEK_COUNT - Math.floor((days.length - data.indexOf(day)) / 7))) : WEEK_COUNT*7;
-        const colSpan = Math.floor((data.indexOf(arr[index+1] || {date: today}) - data.indexOf(day)) / 7);
-        return {
-            label: format(day.date, 'MMM'),
-            // Approximate the column index
-            column: Math.floor(data.indexOf(day) / 7) + 1,
-        }
-    });
+  // Group days by week
+  const weeks: (typeof data)[] = [];
+  for (let i = 0; i < data.length; i += 7) {
+    weeks.push(data.slice(i, i + 7));
+  }
+
+  // Generate month labels with correct positioning
+  const monthLabels = weeks
+    .map((week, weekIndex) => {
+      const firstDay = week[0]?.date;
+      if (!firstDay || !isFirstDayOfMonth(firstDay) && weekIndex > 0 && !isSameMonth(firstDay, weeks[weekIndex-1][0].date)) {
+        return null;
+      }
+      return {
+        label: format(firstDay, 'MMM'),
+        weekIndex: weekIndex,
+      };
+    })
+    .filter(Boolean) as { label: string, weekIndex: number }[];
+
 
   return (
     <Card>
@@ -80,49 +88,51 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-            <div className="flex flex-col gap-2">
-                 {/* Month Labels */}
-                 <div className="grid grid-cols-16 gap-1.5 pl-8 text-xs text-muted-foreground">
-                    {monthLabels.map(({ label, column }) => (
-                         <div key={label} style={{ gridColumn: column }} className="w-fit">
-                            {label}
-                        </div>
-                    ))}
+          <div className="flex flex-col gap-2">
+             {/* Month Labels */}
+            <div className="grid grid-cols-16 gap-1.5 pl-8">
+              {monthLabels.map(({ label, weekIndex }) => (
+                <div
+                  key={label + weekIndex}
+                  style={{ gridColumn: weekIndex + 1 }}
+                  className="text-xs text-muted-foreground"
+                >
+                  {label}
                 </div>
-
-                <div className="flex gap-4">
-                    {/* Day of Week Labels */}
-                    <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-                        {DAY_LABELS.map((label, index) => (
-                            <div key={index} className="h-3.5 flex items-center">{label}</div>
-                        ))}
-                    </div>
-                     {/* Heatmap */}
-                    <div className="grid grid-flow-col grid-rows-7 gap-1.5">
-                        {placeholders.map((_, index) => (
-                            <div key={`placeholder-${index}`} className="h-3.5 w-3.5" />
-                        ))}
-                        {data.map((dayData) => (
-                            <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <div
-                                className={cn(
-                                    'h-3.5 w-3.5 rounded-sm',
-                                    getColor(dayData.count)
-                                )}
-                                />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="text-sm">
-                                {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
-                                {format(dayData.date, 'MMM d, yyyy')}
-                                </p>
-                            </TooltipContent>
-                            </Tooltip>
-                        ))}
-                    </div>
-                </div>
+              ))}
             </div>
+
+            <div className="flex gap-4">
+              {/* Day Labels */}
+              <div className="grid grid-rows-7 gap-1.5 text-xs text-muted-foreground">
+                {DAY_LABELS.map((label, index) => (
+                  <div key={index} className="h-3.5 flex items-center">{label}</div>
+                ))}
+              </div>
+
+              {/* Heatmap Grid */}
+              <div className="grid grid-flow-col grid-rows-7 gap-1.5">
+                {data.map((dayData) => (
+                  <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={cn(
+                          'h-3.5 w-3.5 rounded-sm',
+                          getColor(dayData.count)
+                        )}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
+                        {format(dayData.date, 'MMM d, yyyy')}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </div>
+          </div>
         </TooltipProvider>
       </CardContent>
     </Card>
