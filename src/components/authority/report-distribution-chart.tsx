@@ -77,9 +77,9 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
         <TooltipProvider>
           <div className="flex gap-2">
             <div className="flex flex-col gap-1">
-              {DAY_LABELS.map((label) => (
+              {DAY_LABELS.map((label, index) => (
                 <div
-                  key={label}
+                  key={`${label}-${index}`}
                   className="text-xs text-muted-foreground text-center"
                 >
                   {label}
