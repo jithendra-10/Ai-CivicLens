@@ -13,7 +13,7 @@
     --popover: 240 10% 98%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 207 90% 54%;
+    --primary: 207 90% 54%; /* A modern, professional blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -22,7 +22,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 207 90% 54%;
+    --accent: 207 80% 60%; /* Slightly brighter for hover */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -36,17 +36,17 @@
   }
 
   .dark {
-    --background: 220 30% 11%;
+    --background: 222 47% 11%; /* Dark Navy Blue */
     --foreground: 210 40% 98%;
 
-    --card: 220 30% 15%;
+    --card: 222 47% 15%; /* Slightly Lighter Navy */
     --card-foreground: 210 40% 98%;
 
-    --popover: 220 30% 11%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 220 30% 11%;
+    --primary: 210 40% 98%; /* Pure White */
+    --primary-foreground: 222 47% 11%; /* Navy for text on primary */
 
     --secondary: 217.2 32.6% 22.5%;
     --secondary-foreground: 210 40% 98%;
@@ -54,15 +54,15 @@
     --muted: 217.2 32.6% 22.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 207 90% 54%;
+    --accent: 210 40% 40%; /* A cool, bright blue for accents */
     --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 50.6%; /* Brighter Red */
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 22.5%;
     --input: 217.2 32.6% 22.5%;
-    --ring: 207 90% 54%;
+    --ring: 210 40% 98%;
   }
 }
 
@@ -71,9 +71,12 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-slate-50 text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  .dark body {
+     @apply bg-background text-foreground;
   }
 }
 
@@ -86,5 +89,17 @@
   }
   .animate-ai-pulse {
     animation: ai-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .bg-gradient-blue-purple {
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(260 90% 60%)));
+  }
+  .bg-gradient-orange-red {
+     background-image: linear-gradient(to right, hsl(35 90% 60%), hsl(0 90% 60%)));
+  }
+  .bg-gradient-yellow-orange {
+      background-image: linear-gradient(to right, hsl(50 90% 60%), hsl(35 90% 60%)));
+  }
+  .bg-gradient-green-teal {
+      background-image: linear-gradient(to right, hsl(140 90% 55%), hsl(160 90% 45%)));
   }
 }
