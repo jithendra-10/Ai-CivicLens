@@ -18,8 +18,8 @@ function AnalyticsDashboardSkeleton() {
                 <StatCard.Skeleton />
                 <StatCard.Skeleton />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="rounded-lg">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+                <Card className="rounded-lg bg-card/50">
                     <CardHeader>
                         <Skeleton className="h-6 w-1/3 mb-2" />
                         <Skeleton className="h-4 w-2/3" />
@@ -28,7 +28,7 @@ function AnalyticsDashboardSkeleton() {
                         <Skeleton className="h-56 w-full" />
                     </CardContent>
                 </Card>
-                 <Card className="rounded-lg">
+                 <Card className="rounded-lg bg-card/50">
                     <CardHeader>
                         <Skeleton className="h-6 w-1/3 mb-2" />
                         <Skeleton className="h-4 w-2/3" />
@@ -64,13 +64,13 @@ export function AnalyticsDashboard() {
   const resolved = reports.filter(r => r.status === 'Resolved').length;
 
   return (
-    <div className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard icon={FileText} title="Total Reports" value={total} />
-            <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" />
-            <StatCard icon={CheckCircle} title="Resolved" value={resolved} />
+    <div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <StatCard icon={FileText} title="Total Reports" value={total} variant="blue" />
+            <StatCard icon={Clock} title="Pending" value={pending} description="Submitted & In Progress" variant="yellow" />
+            <StatCard icon={CheckCircle} title="Resolved" value={resolved} variant="green" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             <IssueTypeChart reports={reports} />
             <ConversationalAnalytics reports={reports} />
         </div>

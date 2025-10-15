@@ -106,45 +106,39 @@ export default function CitizenDashboardPage() {
 
   return (
     <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500 space-y-8">
-      <div className="bg-slate-900 -mx-8 -mt-8 p-8 rounded-b-3xl shadow-lg">
-        <div className="container mx-auto">
-          <div className="mb-8 flex items-center gap-2">
-            <Sparkles className="w-8 h-8 text-primary/80 animate-ai-pulse" />
-            <div>
-              <h1 className="text-3xl font-bold font-headline text-primary-foreground">
-                AI CivicLens Dashboard
-              </h1>
-              <p className="text-muted-foreground">
-                Your personal hub for civic engagement.
-              </p>
-            </div>
+      <div className="container mx-auto">
+        <div className="mb-8 flex items-center gap-2">
+          <Sparkles className="w-8 h-8 text-primary/80" />
+          <div>
+            <h1 className="text-3xl font-bold font-headline">
+              Citizen Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Your personal hub for civic engagement.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              icon={FileText}
-              title="Total Reports"
-              value={total}
-              variant="blue"
-            />
-            <StatCard
-              icon={AlertTriangle}
-              title="Submitted"
-              value={submitted}
-              variant="orange"
-            />
-            <StatCard
-              icon={Clock}
-              title="In Progress"
-              value={inProgress}
-              variant="yellow"
-            />
-            <StatCard
-              icon={FileCheck}
-              title="Resolved"
-              value={resolved}
-              variant="green"
-            />
-          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            icon={FileText}
+            title="Total Reports"
+            value={total}
+          />
+          <StatCard
+            icon={AlertTriangle}
+            title="Submitted"
+            value={submitted}
+          />
+          <StatCard
+            icon={Clock}
+            title="In Progress"
+            value={inProgress}
+          />
+          <StatCard
+            icon={FileCheck}
+            title="Resolved"
+            value={resolved}
+          />
         </div>
       </div>
       <div className="container mx-auto">
