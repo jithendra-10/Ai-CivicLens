@@ -4,6 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserNav } from '@/components/auth/user-nav';
 import type { User as AppUser } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
+import { ThemeToggle } from '../theme-toggle';
 
 export default function AppHeader({ user }: { user: AppUser | null }) {
   return (
@@ -12,6 +13,7 @@ export default function AppHeader({ user }: { user: AppUser | null }) {
         <SidebarTrigger />
       </div>
       <div className="flex w-full items-center justify-end gap-4">
+        <ThemeToggle />
         {!user ? (
            <Skeleton className="h-9 w-9 rounded-full" />
         ) : (

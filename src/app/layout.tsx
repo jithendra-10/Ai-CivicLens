@@ -5,6 +5,7 @@ import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { DM_Sans as FontHeadline } from 'next/font/google';
 import { FirebaseClientProvider } from '@/firebase';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -35,10 +36,17 @@ export default function RootLayout({
           fontSans.variable,
           fontHeadline.variable
         )}>
-        <FirebaseClientProvider>
-          {children}
-          <Toaster />
-        </FirebaseClientProvider>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+          <FirebaseClientProvider>
+            {children}
+            <Toaster />
+          </FirebaseClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

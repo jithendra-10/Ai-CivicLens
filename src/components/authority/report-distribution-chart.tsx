@@ -79,14 +79,15 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       <CardContent>
         <TooltipProvider>
           <div className="flex gap-2 items-start">
-             <div className="flex flex-col gap-1 mt-6 text-xs text-muted-foreground">
-                <div className='h-3 w-3'></div>
-                <div>M</div>
-                <div className='h-3 w-3'></div>
-                <div>W</div>
-                <div className='h-3 w-3'></div>
-                <div>F</div>
-                <div className='h-3 w-3'></div>
+            <div className="flex flex-col gap-1 mt-6 text-xs text-muted-foreground">
+               {DAY_LABELS.map((label, index) => {
+                // Render M, W, F on odd indices
+                if (index % 2 !== 0) {
+                  return <div key={`${label}-${index}`}>{label}</div>
+                }
+                // Render an empty div for even indices to create spacing
+                return <div key={`${label}-${index}`} className="h-3 w-3" />
+               })}
             </div>
             <div className="flex flex-col gap-1 overflow-x-auto pb-2">
                <div className="grid grid-flow-col gap-x-6">
