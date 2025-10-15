@@ -9,6 +9,8 @@ import { ConversationalAnalytics } from './conversational-analytics';
 import { IssueTypeChart } from './issue-type-chart';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader } from '../ui/card';
+import { StatusBreakdownChart } from './status-breakdown-chart';
+import { ReportDistributionChart } from './report-distribution-chart';
 
 function AnalyticsDashboardSkeleton() {
     return (
@@ -19,6 +21,26 @@ function AnalyticsDashboardSkeleton() {
                 <StatCard.Skeleton />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3 mb-2" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-56 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/3 mb-2" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-56 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
                 <Card>
                     <CardHeader>
                         <Skeleton className="h-6 w-1/3 mb-2" />
@@ -66,9 +88,13 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard icon={FileText} title="Total Reports" value={total} variant="blue" />
-            <StatCard icon={Clock} title="Pending" value={pending} description={`${Math.round((pending/total) * 100)}% of total`} variant="yellow" />
-            <StatCard icon={CheckCircle} title="Resolved" value={resolved} description={`${Math.round((resolved/total) * 100)}% of total`} variant="green" />
+            <StatCard icon={FileText} title="Total Reports" value={total} />
+            <StatCard icon={Clock} title="Pending" value={pending} description={`${Math.round((pending/total) * 100)}% of total`} />
+            <StatCard icon={CheckCircle} title="Resolved" value={resolved} description={`${Math.round((resolved/total) * 100)}% of total`} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <StatusBreakdownChart reports={reports} />
+            <ReportDistributionChart reports={reports} />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <IssueTypeChart reports={reports} />
