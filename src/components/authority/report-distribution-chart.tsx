@@ -78,38 +78,55 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-          <div className="flex gap-2 items-start">
-            <div className="flex flex-col gap-1 mt-6 text-xs text-muted-foreground">
-               {DAY_LABELS.map((label, index) => (
-                <div key={`${label}-${index}`}>{label}</div>
-               ))}
+          <div className="grid grid-cols-[auto,1fr] gap-x-4 overflow-x-auto pb-2">
+            {/* Day Labels Column */}
+            <div className="grid grid-rows-7 gap-1 mt-[1.75rem]">
+              {DAY_LABELS.map((label, index) => (
+                <div key={index} className="text-xs text-muted-foreground h-3 flex items-center">
+                  {label}
+                </div>
+              ))}
             </div>
-            <div className="flex flex-col gap-1 overflow-x-auto pb-2">
-               <div className="grid grid-flow-col gap-x-6">
-                {monthlyData.map(({ label, weekIndex }) => (
-                  <div key={label} className="text-xs text-muted-foreground" style={{ gridColumnStart: weekIndex + 1 }}>
-                    {label}
-                  </div>
-                ))}
+
+            {/* Heatmap Grid */}
+            <div className="grid grid-flow-col auto-cols-max gap-1">
+              {/* Month Labels */}
+              <div className="grid grid-rows-1 col-span-full">
+                <div className="grid grid-flow-col auto-cols-max gap-x-[1rem]">
+                   {monthlyData.map(({ label, weekIndex }) => {
+                    // Estimate column start based on week index
+                    const colStart = (weekIndex * 7 / 7) + Math.floor(startOfWeek(today).getDate()/7);
+                    return (
+                        <div key={label} className="text-xs text-muted-foreground" style={{ gridColumn: `${Math.max(1, (weekIndex * 4) - 2)} / span 4` }}>
+                            {label}
+                        </div>
+                    );
+                   })}
+                </div>
               </div>
-              <div className="grid grid-flow-col auto-cols-max gap-1">
-                {data.map((dayData, index) => (
-                  <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={cn('h-3 w-3 rounded-sm', getColor(dayData.count))}
-                        style={{ gridRow: getDay(dayData.date) + 1 }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
-                        {format(dayData.date, 'MMM d, yyyy')}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
+              
+              {/* Day cells */}
+              {data.map((dayData, index) => (
+                <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        'h-3 w-3 rounded-sm',
+                        getColor(dayData.count)
+                      )}
+                      style={{
+                        gridRow: getDay(dayData.date) + 2, // +2 to account for month labels
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">
+                      {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
+                      {format(dayData.date, 'MMM d, yyyy')}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </div>
         </TooltipProvider>
