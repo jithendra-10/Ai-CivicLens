@@ -25,17 +25,17 @@ export function StatCard({ icon: Icon, title, value, description, variant = 'blu
 
   return (
     <Card className={cn(
-        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl text-primary-foreground',
+        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl',
         variants[variant]
       )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-inherit">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-white/90">{title}</CardTitle>
          <div className="p-2 bg-black/20 rounded-full">
             <Icon className="h-4 w-4 text-white" />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold text-inherit">{value}</div>
+        <div className="text-3xl font-bold text-white">{value}</div>
         {description && <p className="text-xs text-white/80">{description}</p>}
       </CardContent>
     </Card>
