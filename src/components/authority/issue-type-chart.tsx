@@ -61,7 +61,7 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
   }, [reports]);
 
   return (
-    <Card className="h-full rounded-lg shadow-lg bg-card/50">
+    <Card className="rounded-lg shadow-lg">
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
           <TrendingUp className="text-primary" />
@@ -77,25 +77,24 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
             <BarChart
               accessibilityLayer
               data={chartData}
-              layout="vertical"
-              margin={{ left: 10 }}
+              margin={{
+                top: 20,
+              }}
             >
-              <CartesianGrid horizontal={false} />
-              <YAxis
+              <CartesianGrid vertical={false} />
+              <XAxis
                 dataKey="name"
-                type="category"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value}
-                className="fill-muted-foreground"
+                tickFormatter={(value) => value.slice(0, 3)}
               />
-              <XAxis dataKey="total" type="number" hide />
+              <YAxis />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="line" />}
               />
-              <Bar dataKey="total" layout="vertical" radius={5}>
+              <Bar dataKey="total" radius={8}>
                 {chartData.map((entry) => (
                   <Cell
                     key={`cell-${entry.name}`}
