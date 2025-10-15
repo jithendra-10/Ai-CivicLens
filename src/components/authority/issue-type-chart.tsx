@@ -1,6 +1,6 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from 'recharts';
 import {
   Card,
   CardContent,
@@ -97,7 +97,7 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
               />
               <Bar dataKey="total" layout="vertical" radius={5}>
                 {chartData.map((entry) => (
-                  <recharts.Cell
+                  <Cell
                     key={`cell-${entry.name}`}
                     fill={chartConfig[entry.name]?.color}
                   />
