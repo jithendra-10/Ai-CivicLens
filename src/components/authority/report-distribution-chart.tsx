@@ -15,27 +15,35 @@ import {
 } from '@/components/ui/tooltip';
 import type { Report } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { eachDayOfInterval, format, startOfWeek, endOfWeek, subWeeks, isSameDay, getDay } from 'date-fns';
+import {
+  eachDayOfInterval,
+  format,
+  startOfWeek,
+  endOfWeek,
+  subWeeks,
+  isSameDay,
+  getDay,
+} from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 
 const WEEK_COUNT = 16;
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function getColor(count: number): string {
-    if (count === 0) return 'bg-muted/50 dark:bg-muted/20';
-    if (count < 2) return 'bg-blue-300 dark:bg-blue-800';
-    if (count < 4) return 'bg-blue-400 dark:bg-blue-600';
-    if (count < 6) return 'bg-blue-500 dark:bg-blue-500';
-    return 'bg-blue-600 dark:bg-blue-400';
+  if (count === 0) return 'bg-muted/50 dark:bg-muted/30';
+  if (count < 2) return 'bg-blue-300 dark:bg-blue-800';
+  if (count < 4) return 'bg-blue-400 dark:bg-blue-600';
+  if (count < 6) return 'bg-blue-500 dark:bg-blue-500';
+  return 'bg-blue-600 dark:bg-blue-400';
 }
 
 export function ReportDistributionChart({ reports }: { reports: Report[] }) {
   const today = new Date();
   // Ensure we get a full 16 weeks by starting from the beginning of the week
-  const weekStart = startOfWeek(subWeeks(today, WEEK_COUNT -1));
+  const weekStart = startOfWeek(subWeeks(today, WEEK_COUNT - 1));
 
   const days = eachDayOfInterval({ start: weekStart, end: today });
-  
+
   // Create an array of day data with report counts
   const data = days.map((day) => {
     const count = reports.filter((report) =>
@@ -54,13 +62,12 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
     <div key={`placeholder-${i}`} className="h-3 w-3" />
   ));
 
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
-            <CalendarDays className="text-primary" />
-            <span>Report Distribution</span>
+          <CalendarDays className="text-primary" />
+          <span>Report Distribution</span>
         </CardTitle>
         <CardDescription>
           Daily report submission activity over the last {WEEK_COUNT} weeks.
@@ -68,23 +75,36 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-          <div className="grid grid-flow-col grid-rows-8 gap-1">
-             {DAY_LABELS.map((label) => (
-                <div key={label} className="text-xs text-muted-foreground text-center row-start-1">{label}</div>
-            ))}
-            {placeholders}
-            {data.map(({ date, count }) => (
-              <Tooltip key={date} delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <div className={cn("h-3 w-3 rounded-sm", getColor(count))} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-sm">
-                    {count} report{count !== 1 ? 's' : ''} on {format(new Date(date), 'MMM d, yyyy')}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            ))}
+          <div className="flex gap-2">
+            <div className="flex flex-col gap-1">
+              {DAY_LABELS.map((label, index) => (
+                <div
+                  key={label}
+                  className="text-xs text-muted-foreground text-center"
+                  style={{ visibility: index % 2 === 0 ? 'visible' : 'hidden' }}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-flow-col grid-rows-7 gap-1">
+              {placeholders}
+              {data.map(({ date, count }) => (
+                <Tooltip key={date} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn('h-3 w-3 rounded-sm', getColor(count))}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">
+                      {count} report{count !== 1 ? 's' : ''} on{' '}
+                      {format(new Date(date), 'MMM d, yyyy')}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
           </div>
         </TooltipProvider>
       </CardContent>
