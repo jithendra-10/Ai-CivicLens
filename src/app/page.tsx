@@ -27,6 +27,12 @@ export default function HomePage() {
       description:
         'Gain valuable insights into issue patterns with AI-powered summaries to help predict and prevent future problems.',
     },
+     {
+      icon: <Bell className="h-10 w-10 text-primary" />,
+      title: 'Real-Time Notifications',
+      description:
+        'Keep citizens engaged with automated email notifications about the status of their reports, from submission to resolution.',
+    },
   ];
 
   const stats = [
@@ -82,7 +88,7 @@ export default function HomePage() {
         {/* Features Section */}
         <section id="features" className="py-20 bg-muted/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {features.map((feature) => (
                 <Card key={feature.title} className="text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-background/50">
                   <CardHeader>
