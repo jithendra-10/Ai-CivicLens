@@ -23,6 +23,9 @@ import {
   subWeeks,
   isSameDay,
   getDay,
+  startOfMonth,
+  isSameMonth,
+  getMonth,
 } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
 
@@ -39,28 +42,28 @@ function getColor(count: number): string {
 
 export function ReportDistributionChart({ reports }: { reports: Report[] }) {
   const today = new Date();
-  // Ensure we get a full 16 weeks by starting from the beginning of the week
   const weekStart = startOfWeek(subWeeks(today, WEEK_COUNT - 1));
-
   const days = eachDayOfInterval({ start: weekStart, end: today });
 
-  // Create an array of day data with report counts
-  const data = days.map((day) => {
-    const count = reports.filter((report) =>
-      isSameDay(new Date(report.createdAt), day)
-    ).length;
-    return {
-      date: format(day, 'yyyy-MM-dd'),
-      count,
-      dayOfWeek: getDay(day), // 0 for Sunday, 6 for Saturday
-    };
-  });
+  const data = days.map((day) => ({
+    date: day,
+    count: reports.filter((report) => isSameDay(new Date(report.createdAt), day)).length,
+  }));
 
-  // Create placeholder elements for the start of the grid if the first day is not a Sunday
-  const firstDayOfWeek = data[0]?.dayOfWeek || 0;
-  const placeholders = Array.from({ length: firstDayOfWeek }).map((_, i) => (
-    <div key={`placeholder-${i}`} className="h-3 w-3" />
-  ));
+  const monthlyData = Array.from({ length: WEEK_COUNT }, (_, i) => {
+    const weekStartDate = new Date(weekStart);
+    weekStartDate.setDate(weekStart.getDate() + i * 7);
+    return {
+      month: getMonth(weekStartDate),
+      label: format(weekStartDate, 'MMM'),
+    };
+  }).reduce((acc, { month, label }) => {
+    if (!acc.find(item => item.month === month)) {
+      acc.push({ month, label, weekIndex: acc.length });
+    }
+    return acc;
+  }, [] as { month: number; label: string, weekIndex: number }[]);
+
 
   return (
     <Card>
@@ -75,34 +78,42 @@ export function ReportDistributionChart({ reports }: { reports: Report[] }) {
       </CardHeader>
       <CardContent>
         <TooltipProvider>
-          <div className="flex gap-2">
-            <div className="flex flex-col gap-1">
-              {DAY_LABELS.map((label, index) => (
-                <div
-                  key={`${label}-${index}`}
-                  className="text-xs text-muted-foreground text-center"
-                >
-                  {label}
-                </div>
-              ))}
+          <div className="flex gap-2 items-start">
+             <div className="flex flex-col gap-1 mt-6 text-xs text-muted-foreground">
+                <div className='h-3 w-3'></div>
+                <div>M</div>
+                <div className='h-3 w-3'></div>
+                <div>W</div>
+                <div className='h-3 w-3'></div>
+                <div>F</div>
+                <div className='h-3 w-3'></div>
             </div>
-            <div className="grid grid-flow-col grid-rows-7 gap-1">
-              {placeholders}
-              {data.map(({ date, count }) => (
-                <Tooltip key={date} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={cn('h-3 w-3 rounded-sm', getColor(count))}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-sm">
-                      {count} report{count !== 1 ? 's' : ''} on{' '}
-                      {format(new Date(date), 'MMM d, yyyy')}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+            <div className="flex flex-col gap-1 overflow-x-auto pb-2">
+               <div className="grid grid-flow-col gap-x-6">
+                {monthlyData.map(({ label, weekIndex }) => (
+                  <div key={label} className="text-xs text-muted-foreground" style={{ gridColumnStart: weekIndex + 1 }}>
+                    {label}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-flow-col auto-cols-max gap-1">
+                {data.map((dayData, index) => (
+                  <Tooltip key={dayData.date.toISOString()} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={cn('h-3 w-3 rounded-sm', getColor(dayData.count))}
+                        style={{ gridRow: getDay(dayData.date) + 1 }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        {dayData.count} report{dayData.count !== 1 ? 's' : ''} on{' '}
+                        {format(dayData.date, 'MMM d, yyyy')}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
             </div>
           </div>
         </TooltipProvider>
