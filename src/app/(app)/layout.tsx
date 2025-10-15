@@ -49,7 +49,7 @@ export default function AppLayout({
       <Sidebar>
         <SidebarNavigation user={appUser} />
       </Sidebar>
-      <div className={cn('flex-1', isAuthority && 'dark bg-background text-foreground')}>
+      <div className={cn('flex-1')}>
         <SidebarInset>
           <AppHeader user={appUser} />
           <main className="p-4 sm:p-6 lg:p-8">{children}</main>

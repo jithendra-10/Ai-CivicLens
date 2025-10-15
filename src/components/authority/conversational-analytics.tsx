@@ -74,7 +74,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
     ]
 
     return (
-        <Card className="h-full flex flex-col rounded-lg shadow-lg bg-card/50">
+        <Card className="h-full flex flex-col rounded-lg shadow-lg">
             <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
                     <Bot className="text-primary/80 animate-ai-pulse" />
@@ -120,7 +120,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                                             'p-3 rounded-lg max-w-sm',
                                             message.role === 'user'
                                                 ? 'bg-primary text-primary-foreground'
-                                                : 'bg-card-foreground/5'
+                                                : 'bg-muted'
                                         )}
                                     >
                                         <p className="text-sm">{message.content}</p>

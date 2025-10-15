@@ -23,11 +23,13 @@ interface IssueTypeChartProps {
 }
 
 const colorPalette = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  'hsl(207 90% 54%)', // blue
+  'hsl(140 90% 55%)', // green
+  'hsl(50 90% 60%)',  // yellow
+  'hsl(0 90% 60%)',   // red
+  'hsl(260 90% 60%)', // purple
+  'hsl(160 90% 45%)', // teal
+  'hsl(35 90% 60%)',  // orange
 ];
 
 export function IssueTypeChart({ reports }: IssueTypeChartProps) {
