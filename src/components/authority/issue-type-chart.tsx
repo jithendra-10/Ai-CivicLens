@@ -12,6 +12,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartConfig,
 } from '@/components/ui/chart';
 import type { Report } from '@/lib/types';
 import { useMemo } from 'react';
@@ -21,27 +22,30 @@ interface IssueTypeChartProps {
   reports: Report[];
 }
 
+const chartConfig = {
+  Pothole: { label: 'Pothole', color: 'hsl(var(--chart-1))' },
+  Graffiti: { label: 'Graffiti', color: 'hsl(var(--chart-2))' },
+  'Waste Management': { label: 'Waste', color: 'hsl(var(--chart-3))' },
+  'Broken Streetlight': { label: 'Streetlight', color: 'hsl(var(--chart-4))' },
+  Other: { label: 'Other', color: 'hsl(var(--chart-5))' },
+} satisfies ChartConfig;
+
+
 export function IssueTypeChart({ reports }: IssueTypeChartProps) {
   const chartData = useMemo(() => {
     if (!reports) return [];
     const counts: { [key: string]: number } = {};
     for (const report of reports) {
-      counts[report.issueType] = (counts[report.issueType] || 0) + 1;
+      const issueKey = report.issueType in chartConfig ? report.issueType : 'Other';
+      counts[issueKey] = (counts[issueKey] || 0) + 1;
     }
     return Object.entries(counts)
-      .map(([name, total]) => ({ name, total }))
+      .map(([name, total]) => ({ name, total, fill: `var(--color-${name.replace(/\s+/g, '-')})` }))
       .sort((a, b) => b.total - a.total);
   }, [reports]);
 
-  const chartConfig = {
-    total: {
-      label: 'Reports',
-      color: 'hsl(var(--primary))',
-    },
-  };
-
   return (
-    <Card className="h-full rounded-lg shadow-lg">
+    <Card className="h-full rounded-lg shadow-lg bg-card/50">
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
             <TrendingUp className="text-primary" />
@@ -54,21 +58,22 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
       <CardContent>
         {chartData.length > 0 ? (
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart accessibilityLayer data={chartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis
+            <BarChart accessibilityLayer data={chartData} layout="vertical">
+              <CartesianGrid horizontal={false} />
+              <YAxis
                 dataKey="name"
+                type="category"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 10)}
+                tickFormatter={(value) => chartConfig[value as keyof typeof chartConfig]?.label || value}
               />
-              <YAxis allowDecimals={false} />
+              <XAxis dataKey="total" type="number" hide />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
+                content={<ChartTooltipContent indicator="line" />}
               />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+              <Bar dataKey="total" layout="vertical" radius={4} />
             </BarChart>
           </ChartContainer>
         ) : (

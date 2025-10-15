@@ -74,7 +74,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
     ]
 
     return (
-        <Card className="h-full flex flex-col rounded-lg shadow-lg">
+        <Card className="h-full flex flex-col rounded-lg shadow-lg bg-card/50">
             <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
                     <Bot className="text-primary/80 animate-ai-pulse" />
