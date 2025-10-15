@@ -28,7 +28,6 @@ const colorPalette = [
   'hsl(var(--chart-3))',
   'hsl(var(--chart-4))',
   'hsl(var(--chart-5))',
-  'hsl(var(--chart-6))',
 ];
 
 export function IssueTypeChart({ reports }: IssueTypeChartProps) {
@@ -53,7 +52,6 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
       .map(([name, total]) => ({
         name,
         total,
-        fill: `var(--color-${name})`,
       }))
       .sort((a, b) => b.total - a.total);
 
@@ -89,7 +87,7 @@ export function IssueTypeChart({ reports }: IssueTypeChartProps) {
                 axisLine={false}
                 tickFormatter={(value) => value.slice(0, 3)}
               />
-              <YAxis />
+              <YAxis allowDecimals={false} />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="line" />}
