@@ -5,3 +5,8 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+# VPC connector settings are required for Genkit deployments
+# to securely access Google Cloud services.
+vpc:
+  connector: genkit-vpc
+  egress: private-ranges-only
