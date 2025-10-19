@@ -20,7 +20,8 @@ export function UserNav({ user }: { user: User }) {
   const auth = useAuth();
   const router = useRouter();
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '';
     const names = name.split(' ');
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`;
