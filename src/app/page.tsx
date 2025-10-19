@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,6 +6,7 @@ import { ArrowRight, Bot, BarChart, CheckCircle, Shield, Bell, CopyCheck, Sparkl
 import Link from 'next/link';
 import { WavyTimeline } from '@/components/wavy-timeline';
 import HeroAnimation from '@/components/hero-animation';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 
 export default function HomePage() {
@@ -61,9 +63,12 @@ export default function HomePage() {
             <Sparkles className="h-8 w-8 text-primary animate-ai-pulse" />
             <span className="text-2xl font-bold font-headline">CivicAI</span>
           </Link>
-          <Button asChild>
-            <Link href="/login">Get Started</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button asChild>
+              <Link href="/login">Get Started</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
