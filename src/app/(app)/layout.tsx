@@ -45,7 +45,7 @@ export default function AppLayout({
   const isAuthority = appUser.role === 'authority';
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider>
       <Sidebar>
         <SidebarNavigation user={appUser} />
       </Sidebar>

@@ -7,12 +7,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 import {
   LayoutDashboard,
   FilePlus2,
-  ListOrdered,
   LogOut,
   Settings,
   FileClock,
@@ -40,9 +40,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
     { href: '/authority/reports', label: 'Recent Reports', icon: FileClock },
   ];
 
-  const commonNav = [
-    { href: '/settings', label: 'Settings', icon: Settings },
-  ]
+  const commonNav = [{ href: '/settings', label: 'Settings', icon: Settings }];
 
   const navItems = user.role === 'citizen' ? citizenNav : authorityNav;
 
@@ -53,11 +51,15 @@ export default function SidebarNavigation({ user }: { user: User }) {
 
   return (
     <>
-      <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2">
+      <SidebarHeader className="p-4 justify-between">
+        <Link
+          href="/"
+          className="flex items-center gap-2 group-data-[collapsible=icon]:hidden"
+        >
           <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
           <span className="text-xl font-headline font-semibold">CivicAI</span>
         </Link>
+        <SidebarTrigger className="hidden md:flex" />
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
@@ -80,18 +82,18 @@ export default function SidebarNavigation({ user }: { user: User }) {
       <SidebarFooter className="p-2">
         <SidebarMenu>
           {commonNav.map((item) => (
-             <SidebarMenuItem key={item.href}>
-             <SidebarMenuButton
-               asChild
-               isActive={pathname === item.href}
-               tooltip={item.label}
-             >
-               <Link href={item.href}>
-                 <item.icon />
-                 <span>{item.label}</span>
-               </Link>
-             </SidebarMenuButton>
-           </SidebarMenuItem>
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           ))}
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Log Out" onClick={handleLogout}>
