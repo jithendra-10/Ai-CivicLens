@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -62,21 +63,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center py-12 bg-muted">
-      <div className="mx-auto grid w-[350px] gap-6">
-        <div className="grid gap-2 text-center">
+    <div 
+      className="w-full min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: "url('/images/login-background.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/60 z-0" />
+      <div className="relative z-10 mx-auto grid w-[350px] gap-6">
+        <div className="grid gap-2 text-center text-white">
           <Link
             href="/"
             className="flex justify-center items-center gap-2 mb-4"
           >
-            <Logo className="w-12 h-12 text-primary" />
+            <Logo className="w-12 h-12 text-white" />
             <h1 className="text-4xl font-headline font-bold">CivicAI</h1>
           </Link>
-          <p className="text-balance text-muted-foreground">
+          <p className="text-balance text-white/80">
             Enter your credentials to access your account
           </p>
         </div>
-        <Card>
+        <Card className="bg-background/90 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-2xl font-headline">Login</CardTitle>
             <CardDescription>
@@ -138,9 +143,9 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-4 text-center text-sm text-white">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="underline">
+          <Link href="/register" className="underline font-bold">
             Sign up
           </Link>
         </div>
