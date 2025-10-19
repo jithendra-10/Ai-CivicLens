@@ -59,7 +59,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
           <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
           <span className="text-xl font-headline font-semibold">CivicAI</span>
         </Link>
-        <SidebarTrigger className="hidden md:flex" />
+        <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
