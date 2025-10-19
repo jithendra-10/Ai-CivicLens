@@ -90,16 +90,13 @@
   .animate-ai-pulse {
     animation: ai-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  .bg-gradient-blue-purple {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(260 90% 60%));
+  .bg-gradient-red-orange {
+    background-image: linear-gradient(to right, #E21C34, #FC210D);
   }
-  .bg-gradient-orange-red {
-     background-image: linear-gradient(to right, hsl(35 90% 60%), hsl(0 90% 60%));
+  .bg-gradient-blue-teal {
+      background-image: linear-gradient(to right, #0D5051, #6CD0FF);
   }
-  .bg-gradient-yellow-orange {
-      background-image: linear-gradient(to right, hsl(50 90% 60%), hsl(35 90% 60%));
-  }
-  .bg-gradient-green-teal {
-      background-image: linear-gradient(to right, hsl(140 90% 55%), hsl(160 90% 45%));
+  .bg-gradient-purple-blue {
+      background-image: linear-gradient(to right, #5B146F, hsl(var(--primary)));
   }
 }

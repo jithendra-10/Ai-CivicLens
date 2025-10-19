@@ -12,21 +12,23 @@ interface StatCardProps {
     title: string;
     value: number | string;
     description?: string;
-    variant?: 'blue' | 'yellow' | 'green' | 'red';
+    variant?: 'blue' | 'yellow' | 'green' | 'red' | 'custom';
+    gradientClassName?: string;
 }
 
-export function StatCard({ icon: Icon, title, value, description, variant = 'blue' }: StatCardProps) {
+export function StatCard({ icon: Icon, title, value, description, variant = 'blue', gradientClassName }: StatCardProps) {
     const variants = {
         blue: 'bg-gradient-blue-purple text-white',
         yellow: 'bg-gradient-yellow-orange text-white',
         green: 'bg-gradient-green-teal text-white',
-        red: 'bg-gradient-orange-red text-white'
+        red: 'bg-gradient-orange-red text-white',
+        custom: gradientClassName || 'bg-gradient-blue-purple text-white',
     };
 
   return (
     <Card className={cn(
-        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl',
-        variants[variant]
+        'transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-lg rounded-xl text-white',
+        variant === 'custom' ? gradientClassName : variants[variant]
       )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-white/90">{title}</CardTitle>

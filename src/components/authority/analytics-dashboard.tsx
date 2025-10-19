@@ -88,9 +88,9 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard icon={FileText} title="Total Reports" value={total} />
-            <StatCard icon={Clock} title="Pending" value={pending} description={`${Math.round((pending/total) * 100)}% of total`} />
-            <StatCard icon={CheckCircle} title="Resolved" value={resolved} description={`${Math.round((resolved/total) * 100)}% of total`} />
+            <StatCard icon={FileText} title="Total Reports" value={total} variant="custom" gradientClassName="bg-gradient-red-orange" />
+            <StatCard icon={Clock} title="Pending" value={pending} description={`${Math.round((pending/total) * 100)}% of total`} variant="custom" gradientClassName="bg-gradient-blue-teal" />
+            <StatCard icon={CheckCircle} title="Resolved" value={resolved} description={`${Math.round((resolved/total) * 100)}% of total`} variant="custom" gradientClassName="bg-gradient-purple-blue" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <StatusBreakdownChart reports={reports} />
