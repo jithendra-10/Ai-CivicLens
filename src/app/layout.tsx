@@ -20,7 +20,7 @@ const fontHeadline = FontHeadline({
 
 
 export const metadata: Metadata = {
-  title: 'CivicAI',
+  title: 'CivicLens',
   description: 'AI-powered civic issue reporting',
 };
 

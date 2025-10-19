@@ -75,7 +75,7 @@ export default function LoginPage() {
             className="flex justify-center items-center gap-2 mb-4"
           >
             <Logo className="w-12 h-12 text-white" />
-            <h1 className="text-4xl font-headline font-bold">CivicAI</h1>
+            <h1 className="text-4xl font-headline font-bold">CivicLens</h1>
           </Link>
           <p className="text-balance text-white/80">
             Enter your credentials to access your account

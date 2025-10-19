@@ -61,7 +61,7 @@ export default function HomePage() {
         <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="h-8 w-8 text-primary animate-ai-pulse" />
-            <span className="text-2xl font-bold font-headline">CivicAI</span>
+            <span className="text-2xl font-bold font-headline">CivicLens</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -77,6 +77,9 @@ export default function HomePage() {
         <section className="py-20 text-center animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <HeroAnimation />
+            <h1 className="text-5xl md:text-6xl font-bold font-headline mt-6">
+              AI CivicLens
+            </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
               The definitive AI-powered compliance and citizen engagement
               platform. Transform governance from reactive to proactive.
@@ -146,10 +149,10 @@ export default function HomePage() {
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 py-8 px-4 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
              <Sparkles className="h-6 w-6 text-primary" />
-             <span className="font-semibold font-headline">CivicAI</span>
+             <span className="font-semibold font-headline">CivicLens</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} CivicAI. All rights reserved.
+            © {new Date().getFullYear()} CivicLens. All rights reserved.
           </p>
         </div>
       </footer>

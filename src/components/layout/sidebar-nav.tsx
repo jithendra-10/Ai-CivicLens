@@ -56,7 +56,7 @@ export default function SidebarNavigation({ user }: { user: User }) {
           className="flex items-center gap-2 group-data-[collapsible=icon]:hidden"
         >
           <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
-          <span className="text-xl font-headline font-semibold">CivicAI</span>
+          <span className="text-xl font-headline font-semibold">CivicLens</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">
