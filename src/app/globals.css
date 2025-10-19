@@ -90,13 +90,4 @@
   .animate-ai-pulse {
     animation: ai-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  .bg-gradient-red-orange {
-    background-image: linear-gradient(to right, #E21C34, #FC210D);
-  }
-  .bg-gradient-blue-teal {
-      background-image: linear-gradient(to right, #0D5051, #6CD0FF);
-  }
-  .bg-gradient-purple-blue {
-      background-image: linear-gradient(to right, #5B146F, hsl(var(--primary)));
-  }
 }
