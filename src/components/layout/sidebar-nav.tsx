@@ -7,7 +7,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 import {
@@ -59,7 +58,6 @@ export default function SidebarNavigation({ user }: { user: User }) {
           <Sparkles className="w-8 h-8 text-primary animate-ai-pulse" />
           <span className="text-xl font-headline font-semibold">CivicAI</span>
         </Link>
-        <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
