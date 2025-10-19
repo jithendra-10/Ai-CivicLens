@@ -72,9 +72,6 @@ export default function HomePage() {
         <section className="py-20 text-center animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <HeroAnimation />
-            <h1 className="text-5xl font-bold font-headline tracking-tighter sm:text-6xl md:text-7xl">
-              AI CivicLens
-            </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl">
               The definitive AI-powered compliance and citizen engagement
               platform. Transform governance from reactive to proactive.
