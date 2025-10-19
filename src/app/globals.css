@@ -81,6 +81,18 @@
 }
 
 @layer utilities {
+  .bg-gradient-blue-purple {
+    background-image: linear-gradient(to right, #5B146F, #2077E8);
+  }
+  .bg-gradient-yellow-orange {
+    background-image: linear-gradient(to right, #FCB00D, #E21C34);
+  }
+  .bg-gradient-green-teal {
+    background-image: linear-gradient(to right, #6CD0FF, #0D5051);
+  }
+  .bg-gradient-orange-red {
+     background-image: linear-gradient(to right, #FCB00D, #E21C34);
+  }
   @keyframes ai-pulse {
     50% {
       opacity: 0.6;

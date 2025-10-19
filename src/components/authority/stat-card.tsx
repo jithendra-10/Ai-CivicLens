@@ -18,8 +18,8 @@ interface StatCardProps {
 export function StatCard({ icon: Icon, title, value, description, variant = 'blue' }: StatCardProps) {
     const variants = {
         blue: 'bg-blue-500 text-white',
-        yellow: 'bg-yellow-500 text-white',
-        green: 'bg-green-500 text-white',
+        yellow: 'bg-gradient-yellow-orange text-white',
+        green: 'bg-gradient-green-teal text-white',
         red: 'bg-red-500 text-white'
     };
 
