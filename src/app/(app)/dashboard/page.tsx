@@ -135,13 +135,13 @@ export default function CitizenDashboardPage() {
             icon={Clock}
             title="In Progress"
             value={inProgress}
-            variant="green"
+            variant="yellow"
           />
           <StatCard
             icon={FileCheck}
             title="Resolved"
             value={resolved}
-            variant="red"
+            variant="green"
           />
         </div>
       </div>
