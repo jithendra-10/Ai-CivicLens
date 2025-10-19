@@ -6,6 +6,8 @@ import {
   SidebarProvider,
   Sidebar,
   SidebarInset,
+  useSidebar,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import SidebarNavigation from '@/components/layout/sidebar-nav';
 import AppHeader from '@/components/layout/header';
@@ -14,12 +16,9 @@ import { doc } from 'firebase/firestore';
 import type { User as AppUser } from '@/lib/types';
 import Loading from '@/app/loading';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const firestore = useFirestore();
@@ -28,7 +27,7 @@ export default function AppLayout({
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
-  
+
   const { data: appUser, isLoading: isAppUserLoading } =
     useDoc<AppUser>(userDocRef);
 
@@ -42,19 +41,28 @@ export default function AppLayout({
     return <Loading />;
   }
 
-  const isAuthority = appUser.role === 'authority';
-
   return (
-    <SidebarProvider>
-      <Sidebar>
+    <>
+      <Sidebar variant="inset">
         <SidebarNavigation user={appUser} />
       </Sidebar>
-      <div className={cn('flex-1')}>
-        <SidebarInset>
-          <AppHeader user={appUser} />
-          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-        </SidebarInset>
-      </div>
+      <SidebarInset>
+        <AppHeader user={appUser} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      </SidebarInset>
+    </>
+  );
+}
+
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SidebarProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
     </SidebarProvider>
   );
 }
