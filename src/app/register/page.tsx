@@ -103,24 +103,15 @@ export default function RegisterPage() {
         await updateProfile(user, {
           displayName: data.fullName,
         });
-
-        // This is the correct way to store role information for security rules.
-        const userDocData: any = {
+        
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDoc(userDocRef, {
           uid: user.uid,
           fullName: data.fullName,
           email: data.email,
           role: data.role,
           createdAt: new Date().toISOString(),
-        };
-
-        // If the user is an authority, add the `authority: true` field.
-        // This field will be checked by our security rules.
-        if (data.role === 'authority') {
-          userDocData.authority = true;
-        }
-
-        const userDocRef = doc(firestore, 'users', user.uid);
-        await setDoc(userDocRef, userDocData);
+        });
         
         toast({
           title: 'Registration Successful',
@@ -285,5 +276,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-    
