@@ -1,29 +1,16 @@
-/**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user profiles and a public-read, owner-write model for reports.
- *
- * Data Structure:
- * - /users/{userId}: Stores individual user profiles. Only the user can read/write their own profile.
- * - /reports/{reportId}: Stores all reports. Read access is public, but write access is restricted to the report creator or an authority.
- * - /reports/{reportId}/duplicates/{duplicateId}: Stores records of duplicate report submissions. Only the user who submitted the duplicate report can create a record.
- *
- * Key Security Decisions:
- * - User listing is disabled to protect privacy.
- * - Reports are publicly readable to encourage transparency.
- *
- * Denormalization for Authorization:
- * - The 'Report' entity requires a 'userId' field to identify the creator. This is essential for enforcing owner-only writes.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
+     * @description Manages user profile data.
      * @path /users/{userId}
-     * @allow (create, update, delete) if the user is the owner of the profile.
-     * @deny (create, update, delete) if the user is not the owner of the profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (get) User with UID 'user123' can read their own profile.
+     * @allow (create) User with UID 'user123' can create their profile if the userId matches their UID.
+     * @deny (get) User with UID 'user456' cannot read the profile of user 'user123'.
+     * @deny (update) User with UID 'user456' cannot update the profile of user 'user123'.
+     * @deny (delete) User with UID 'user456' cannot delete the profile of user 'user123'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data.
      */
     match /users/{userId} {
       // Function to check if the user is signed in
@@ -31,32 +18,31 @@ service cloud.firestore {
         return request.auth != null;
       }
 
-      // Function to check if the user is the owner
+      // Function to check if the user is the owner of the document
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
 
-      // Function to check if the user is the existing owner
+      // Function to check if the user is an existing owner of the document
       function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+        return isSignedIn() && request.auth.uid == resource.data.uid;
       }
 
       allow get: if isOwner(userId);
-      allow list: if false; // Prevent listing all users
-
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Controls access to civic issue reports.
+     * @description Manages civic issue reports.
      * @path /reports/{reportId}
-     * @allow (get, list) anyone can read reports.
-     * @allow (create) only signed-in users can create reports, with the creator's ID validated.
-     * @allow (update, delete) only the report owner or an authority can modify/delete reports.
-     * @deny (update, delete) if the user is not the owner and not an authority.
-     * @principle Allows public read access but restricts write access to the report owner.
+     * @allow (get) Any user can read a report.
+     * @allow (create) User with UID 'user123' can create a report if report.userId matches their UID.
+     * @deny (update) User with UID 'user456' cannot update a report created by user 'user123'.
+     * @deny (delete) User with UID 'user456' cannot delete a report created by user 'user123'.
+     * @principle Allows public read access, but restricts write access to the owner.
      */
     match /reports/{reportId} {
       // Function to check if the user is signed in
@@ -64,55 +50,41 @@ service cloud.firestore {
         return request.auth != null;
       }
 
-      // Function to check if the user is the owner
-      function isOwner(userId) {
-        return get(/databases/$(database)/documents/reports/$(reportId)).data.userId == userId;
-      }
-       // Function to check if the requesting user is the owner
-      function isRequestOwner() {
-        return request.resource.data.userId == request.auth.uid;
+      // Function to check if the user is the owner of the document
+      function isOwner() {
+        return request.auth.uid == resource.data.userId;
       }
 
-      // Function to check if the user is the existing owner
+      // Function to check if the user is an existing owner of the document
       function isExistingOwner() {
-        return get(/databases/$(database)/documents/reports/$(reportId)).data.userId == request.auth.uid;
+        return isSignedIn() && request.auth.uid == resource.data.userId;
       }
 
       allow get: if true;
-      allow list: if true;
-
-      allow create: if isSignedIn() && isRequestOwner();
-      allow update: if isSignedIn() && isExistingOwner();
-      allow delete: if isSignedIn() && isExistingOwner();
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner();
+      allow delete: if isOwner();
     }
 
     /**
-     * @description Controls access to duplicate report submissions.
+     * @description Manages duplicate submission records for reports.
      * @path /reports/{reportId}/duplicates/{duplicateId}
-     * @allow (create) only the user who submitted the duplicate report can create a record.
-     * @deny (create) if the user is not the one who submitted the duplicate report.
-     *   and all other write operations are denied
-     * @principle Enforces that only the submitting user can record a duplicate submission.
+     * @allow (create) Authenticated user can create a duplicate submission record.
+     * @deny (get) Any user is denied to read a duplicate submission record.
+     * @deny (update) Any user cannot update a duplicate submission record.
+     * @deny (delete) Any user cannot delete a duplicate submission record.
+     * @principle Requires authentication for creation.
      */
     match /reports/{reportId}/duplicates/{duplicateId} {
-       // Function to check if the user is signed in
+      // Function to check if the user is signed in
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Function to check if the user is the owner
-      function isOwner(userId) {
-        return get(/databases/$(database)/documents/reports/$(reportId)/duplicates/$(duplicateId)).data.userId == userId;
-      }
-      // Function to check if the requesting user is the owner
-      function isRequestOwner() {
-        return request.resource.data.userId == request.auth.uid;
-      }
-
       allow get: if false;
       allow list: if false;
-
-      allow create: if isSignedIn() && isRequestOwner();
+      allow create: if isSignedIn();
       allow update: if false;
       allow delete: if false;
     }
