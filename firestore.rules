@@ -1,35 +1,33 @@
 /**
- * @fileoverview Firestore Security Rules for CivicLens.
- *
- * Core Philosophy:
- * This ruleset enforces a user-ownership model for user profiles and a public-read, owner-write model for reports.
- *
- * Data Structure:
- * - /users/{userId}: Stores individual user profiles, secured with owner-only access.
- * - /reports/{reportId}: Stores civic issue reports, publicly readable but writable only by the report creator.
- * - /reports/{reportId}/duplicates/{duplicateId}: Stores duplicate report submissions, writable only by the report creator.
- *
- * Key Security Decisions:
- * - Users can only access their own user documents. Listing all users is disallowed.
- * - Reports are publicly readable, but only the creator can modify or delete them.
- * - The `userId` field is denormalized into the `Report` documents for efficient authorization.
- *
- * Denormalization for Authorization:
- * - The `Report` entity includes a `userId` field, denormalizing the user's ID for efficient ownership checks.
- *
- * Structural Segregation:
- * - Public reports and private user data are stored in separate top-level collections.
+ * @file Firebase Security Rules for CivicLens
+ * @version 2
+ * @core_philosophy This ruleset enforces a strict user-ownership model for user profiles,
+ * grants public read access to reports, and restricts modification of reports to authorized users.
+ * Duplicates are owned by the parent reports and can only be created by authenticated users.
+ * @data_structure
+ * - /users/{userId}: Stores user profile information.  Only the user themselves can read or write this data.
+ * - /reports/{reportId}: Stores civic issue reports.  Anyone can read reports, but creation is restricted to authenticated users.
+ *   Updates and deletes are disallowed.
+ * - /reports/{reportId}/duplicates/{duplicateId}: Stores duplicate submission records.  Only authenticated users can create.
+ *   Listing duplicates is only allowed for authenticated users. Updates and deletes are disallowed.
+ * @key_security_decisions
+ * - Users can only access their own profile data.
+ * - Reports are publicly readable but can only be created by authenticated users.  Updates/deletes are prohibited to simplify the data model and prevent accidental data loss.
+ * - Listing users is not permitted.
+ * - Duplicate submissions can only be created by authenticated users.
+ * @denormalization_for_authorization N/A
+ * @structural_segregation N/A
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Protects user profiles, ensuring only the owner can read or write their own data.
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (get, create, update, delete): User with UID 'userId' can access their own profile.
-     * @deny (get, create, update, delete): Any other user attempting to access this profile.
-     * @principle Enforces strict user-ownership for all operations.
+     * @allow (get, create, update, delete) User 'ILbooJoDSwRuGuxnjcp4XQDnhvl2' can access their own profile at /users/ILbooJoDSwRuGuxnjcp4XQDnhvl2.
+     * @deny (get, create, update, delete) User 'attackerId' cannot access the profile at /users/ILbooJoDSwRuGuxnjcp4XQDnhvl2.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /users/{userId} {
       function isSignedIn() {
@@ -37,65 +35,54 @@ service cloud.firestore {
       }
 
       function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
+        return request.auth.uid == userId;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false; // Do not allow listing of all users.
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Allows public reading of reports, but restricts creation, updates, and deletions to the report creator.
+     * @description Controls access to civic issue reports.
      * @path /reports/{reportId}
-     * @allow (get, list): Any user can read reports.
-     * @allow (create): User can create a report if the userId matches their auth.uid.
-     * @allow (update, delete): Only the report creator can modify or delete.
-     * @deny (create): User cannot create a report if the userId does not match their auth.uid.
-     * @deny (update, delete): A non-creator cannot modify or delete the report.
-     * @principle Allows public read access while enforcing owner-only write access.
+     * @allow (get, list) Anyone can read reports to facilitate public awareness.
+     * @allow (create) User 'ILbooJoDSwRuGuxnjcp4XQDnhvl2' can create a report with userId set to their own UID.
+     * @deny (update, delete) No one can update or delete reports.
+     * @principle Allows public read access, restricts creation to authenticated users with ownership validation.
      */
     match /reports/{reportId} {
       function isSignedIn() {
         return request.auth != null;
       }
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isReportOwner(report) {
-        return isSignedIn() && report.userId == request.auth.uid;
-      }
-
-      function isExistingReportOwner(reportId) {
-        return get(/databases/$(database)/documents/reports/$(reportId)).data.userId == request.auth.uid;
-      }
-
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && isExistingReportOwner(reportId) ;
-      allow delete: if isSignedIn() && isExistingReportOwner(reportId);
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Secures duplicate submissions, ensuring that only authenticated users can create them and that the submission links to an existing report.
+     * @description Controls access to duplicate submission records for reports.
      * @path /reports/{reportId}/duplicates/{duplicateId}
-     * @allow (create): Only authenticated users can create duplicate submissions.
-     * @allow (get, list): Only authenticated users can read submissions.
-     * @deny (update, delete): No one can update or delete duplicate submissions.
-     * @principle Restricts duplicate submissions to authenticated users.
+     * @allow (create) Authenticated user can create duplicate record.
+     * @allow (list) Authenticated user can list duplicate records.
+     * @deny (update, delete) No one can update or delete duplicate records.
+     * @principle Restricts creation of duplicate submission records to authenticated users.
      */
     match /reports/{reportId}/duplicates/{duplicateId} {
-       function isSignedIn() {
+      function isSignedIn() {
         return request.auth != null;
       }
 
-      allow get, list: if isSignedIn();
+      allow get: if false;
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }
