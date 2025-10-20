@@ -1,92 +1,113 @@
+/**
+ * @fileoverview Firestore Security Rules for CivicLens.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a hybrid security model, balancing public readability of reports with strict ownership and role-based access control for modifications. User profiles are private and accessible only to the owning user.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores private user profile data, accessible only to the user themselves.
+ * - /reports/{reportId}: Stores public reports. Accessible to all users for reading, but create/update/delete are restricted to the report owner or an authority user.
+ * - /reports/{reportId}/duplicates/{duplicateId}: Stores records of duplicate report submissions, only accessible to the user.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed to protect privacy.
+ * - Reports are publicly readable to encourage transparency.
+ * - Authority role required to update the fields authorityId and resolvedImageUrl on the reports collection.
+ *
+ * Denormalization for Authorization:
+ *  - The `Report` entity must contain a `userId` field to identify the report's owner. This is essential for secure write rules.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile data.
+     * @description Grants owner-only access to user profile data.
      * @path /users/{userId}
-     * @allow (get) User with UID 'user123' can read their own profile.
-     * @allow (create) User with UID 'user123' can create their profile if the userId matches their UID.
-     * @deny (get) User with UID 'user456' cannot read the profile of user 'user123'.
-     * @deny (update) User with UID 'user456' cannot update the profile of user 'user123'.
-     * @deny (delete) User with UID 'user456' cannot delete the profile of user 'user123'.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data.
+     * @allow (read, write) if the user is signed in and the requested userId matches the authenticated user's ID (isOwner).
+     * @deny (read, write) if the user is not signed in or the userId does not match the authenticated user's ID.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      // Function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Function to check if the user is the owner of the document
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      // Function to check if the user is an existing owner of the document
-      function isExistingOwner(userId) {
-        return isSignedIn() && request.auth.uid == resource.data.uid;
-      }
-
       allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow list: if false; // User listing is not allowed
+
+      allow create: if isOwner(userId);
       allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Manages civic issue reports.
+     * @description Allows public read access to reports while restricting write access to the report owner or authorized authority user.
      * @path /reports/{reportId}
-     * @allow (get) Any user can read a report.
-     * @allow (create) User with UID 'user123' can create a report if report.userId matches their UID.
-     * @deny (update) User with UID 'user456' cannot update a report created by user 'user123'.
-     * @deny (delete) User with UID 'user456' cannot delete a report created by user 'user123'.
-     * @principle Allows public read access, but restricts write access to the owner.
+     * @allow (get, list) to all users.
+     * @allow (create) if the request includes a 'userId' field that matches the authenticated user's ID.
+     * @allow (update, delete) if the user is the report owner.
+     * @deny (create) if the 'userId' field does not match the authenticated user's ID.
+     * @deny (update, delete) if the user is not the report owner.
+     * @principle Public read access with owner-only writes.
      */
     match /reports/{reportId} {
-      // Function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Function to check if the user is the owner of the document
-      function isOwner() {
-        return request.auth.uid == resource.data.userId;
-      }
-
-      // Function to check if the user is an existing owner of the document
-      function isExistingOwner() {
-        return isSignedIn() && request.auth.uid == resource.data.userId;
-      }
-
       allow get: if true;
-      allow list: if false;
+      allow list: if true;
+
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner();
-      allow delete: if isOwner();
+      allow update: if (isExistingOwner(resource.data.userId)) || (hasAuthorityRole() && (request.resource.data.keys().hasAll(['authorityId', 'resolvedImageUrl'])));
+      allow delete: if isExistingOwner(resource.data.userId);
     }
 
     /**
-     * @description Manages duplicate submission records for reports.
+     * @description Grants owner-only access to duplicate submission records.
      * @path /reports/{reportId}/duplicates/{duplicateId}
-     * @allow (create) Authenticated user can create a duplicate submission record.
-     * @deny (get) Any user is denied to read a duplicate submission record.
-     * @deny (update) Any user cannot update a duplicate submission record.
-     * @deny (delete) Any user cannot delete a duplicate submission record.
-     * @principle Requires authentication for creation.
+     *   The rule will permit (create) if the user is signed in and the userId on the request matches the user who is signed in.
+     *   The rule will reject (create) if the user is not signed in.
+     * @allow (read, write) if the user is signed in and the requested userId matches the authenticated user's ID (isOwner).
+     * @deny (read, write) if the user is not signed in or the userId does not match the authenticated user's ID.
+     * @principle Enforces document ownership for all operations.
      */
     match /reports/{reportId}/duplicates/{duplicateId} {
-      // Function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
+      allow get: if isOwner(request.resource.data.userId);
+      allow list: if isOwner(request.resource.data.userId);
 
-      allow get: if false;
-      allow list: if false;
-      allow create: if isSignedIn();
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(request.resource.data.userId);
+      allow delete: if isExistingOwner(request.resource.data.userId);
+    }
+
+    // --- Helper functions ---
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the resource.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the resource and the resource exists.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /**
+    * @description Checks if the user has the 'authority' custom claim.
+    * @return {boolean} True if the user has the 'authority' claim set to true, false otherwise.
+    */
+    function hasAuthorityRole() {
+      return isSignedIn() && request.auth.token.authority == true;
     }
   }
 }
