@@ -1,120 +1,105 @@
+/**
+ * @fileoverview Firestore Security Rules for CivicLens.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles and a public-read, owner-write model for reports.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores individual user profiles, accessible only to the user themselves.
+ * - /reports/{reportId}: Stores civic issue reports, publicly readable but writable only by the report creator.
+ * - /reports/{reportId}/duplicates/{duplicateId}: Stores duplicate submissions, only accessible to the report creator.
+ *
+ * Key Security Decisions:
+ * - Users can only read and write their own profile data.
+ * - Reports are publicly readable to encourage community engagement, but only the creator can modify or delete them.
+ * - Listing of users is disallowed for privacy.
+ *
+ * Denormalization for Authorization:
+ * - Reports must contain a `userId` field to identify the creator for write authorization.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces user-ownership for user profiles.
+     * @description Manages user profiles.
      * @path /users/{userId}
-     * @allow (get) User with UID 'ILbooJoDSwRuGuxnjcp4XQDnhvl2' can access /users/ILbooJoDSwRuGuxnjcp4XQDnhvl2.
-     * @allow (create) User with UID 'testUserId' can create /users/testUserId.
-     * @allow (update) User with UID 'testUserId' can update /users/testUserId.
-     * @allow (delete) User with UID 'testUserId' can delete /users/testUserId.
-     * @deny (get) User with UID 'otherUserId' cannot access /users/testUserId.
-     * @deny (create) User with UID 'otherUserId' cannot create /users/testUserId.
-     * @deny (update) User with UID 'otherUserId' cannot update /users/testUserId.
-     * @deny (delete) User with UID 'otherUserId' cannot delete /users/testUserId.
+     * @allow (get, create, update, delete, list) if the user's UID matches the userId.
+     * @deny (create, update, delete) if the user's UID does not match the userId.
      * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in
+      // Function to check if the user is signed in.
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Helper function to check if the requested user id matches the authenticated user id
+      // Function to check if the request is made by the owner of the user document.
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return isSignedIn() && request.auth.uid == userId;
       }
 
-      // Allow the user to read their own profile.
-      allow get: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to create their own profile. The userId must match the authenticated user's UID.
-      allow create: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to update their own profile. The userId in the resource data must match the authenticated user's UID and cannot be changed.
-      allow update: if isSignedIn() && isOwner(userId);
-
-      // Allow the user to delete their own profile.
-      allow delete: if isSignedIn() && isOwner(userId);
-
-      // Prevent listing of all users.
-      allow list: if false;
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallowing listing of all users for privacy.
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Allows public read access to reports, but restricts write access to the report's owner.
+     * @description Manages civic issue reports. Reports are publicly readable, but only the creator can modify them.
      * @path /reports/{reportId}
-     * @allow (get) Any user can access any report.
-     * @allow (list) Any user can list all reports.
-     * @allow (create) User with UID 'testUserId' can create a report if request.resource.data.userId == request.auth.uid.
-     * @allow (update) User with UID 'testUserId' can update a report if they are the owner.
-     * @allow (delete) User with UID 'testUserId' can delete a report if they are the owner.
-     * @deny (create) User with UID 'otherUserId' cannot create a report with request.resource.data.userId != request.auth.uid.
-     * @deny (update) User with UID 'otherUserId' cannot update a report they don't own.
-     * @deny (delete) User with UID 'otherUserId' cannot delete a report they don't own.
-     * @principle Allows public read with owner-only writes.
+     * @allow (get, list) anyone can read the reports.
+     * @allow (create) if the report's userId matches the authenticated user's UID.
+     * @allow (update, delete) if the report's userId matches the authenticated user's UID and the document exists.
+     * @deny (create, update, delete) if the report's userId does not match the authenticated user's UID.
+     * @principle Enforces document ownership for writes, allows public reads.
      */
     match /reports/{reportId} {
-      // Helper function to check if the user is signed in
+
+      // Function to check if the user is signed in.
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Helper function to check if the requested user id matches the authenticated user id
-      function isOwner(reportId) {
-        return resource.data.userId == request.auth.uid;
+      // Function to check if the request is made by the owner of the report.
+      function isOwner() {
+        return isSignedIn() && resource.data.userId == request.auth.uid;
       }
 
-      // Allow anyone to read any report.
-      allow get, list: if true;
-
-      // Allow a user to create a report if the userId matches their auth UID.
+      allow get: if true;
+      allow list: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-
-      // Allow the owner of the report to update it.
-      allow update: if isSignedIn() && isOwner(reportId);
-
-      // Allow the owner of the report to delete it.
-      allow delete: if isSignedIn() && isOwner(reportId);
+      allow update: if isOwner();
+      allow delete: if isOwner();
     }
 
     /**
-     * @description Restricts access to duplicate submissions to the report owner.
+     * @description Manages duplicate submissions for a report. Only the report creator can access these.
      * @path /reports/{reportId}/duplicates/{duplicateId}
-     * @allow (get) User with UID 'testUserId' can get if they are the owner of the parent report.
-     * @allow (list) User with UID 'testUserId' can list if they are the owner of the parent report.
-     * @allow (create) Any authenticated user can create a duplicate submission.
-     * @allow (update) User with UID 'testUserId' can update a duplicate submission if they own the original report.
-     * @allow (delete) User with UID 'testUserId' can delete a duplicate submission if they own the original report.
-     * @deny (get) User with UID 'otherUserId' cannot get if they are not the owner of the parent report.
-     * @deny (list) User with UID 'otherUserId' cannot list if they are not the owner of the parent report.
-     * @deny (update) User with UID 'otherUserId' cannot update a duplicate submission they don't own.
-     * @deny (delete) User with UID 'otherUserId' cannot delete a duplicate submission they don't own.
-     * @principle Enforces document ownership for writes.
+     * @allow (get, list) if the user is the owner of the parent report.
+     * @allow (create) if the user is the owner of the parent report.
+     * @allow (update, delete) if the user is the owner of the parent report and the document exists.
+     * @deny (create, update, delete, get, list) if the user is not the owner of the parent report.
+     * @principle Restricts access to duplicate submissions to the owner of the parent report.
      */
     match /reports/{reportId}/duplicates/{duplicateId} {
-      // Helper function to check if the user is signed in
+
+      // Function to check if the user is signed in.
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Helper function to check if the requested user id matches the authenticated user id
-      function isOwner(reportId) {
-        return get(/databases/$(database)/documents/reports/$(reportId)).data.userId == request.auth.uid;
+      // Function to check if the user is made by the owner of the report.
+      function isOwner() {
+        return isSignedIn() && get(/databases/$(database)/documents/reports/$(reportId)).data.userId == request.auth.uid;
       }
 
-      // Allow the owner of the report to read duplicate submissions.
-      allow get, list: if isSignedIn() && isOwner(reportId);
-
-      // Allow any authenticated user to create a duplicate submission.
-      allow create: if isSignedIn();
-
-      // Allow the owner of the parent report to update the duplicate submission.
-      allow update: if isSignedIn() && isOwner(reportId);
-
-      // Allow the owner of the parent report to delete the duplicate submission.
-      allow delete: if isSignedIn() && isOwner(reportId);
+      allow get: if isOwner();
+      allow list: if isOwner();
+      allow create: if isOwner();
+      allow update: if isOwner();
+      allow delete: if isOwner();
     }
   }
 }

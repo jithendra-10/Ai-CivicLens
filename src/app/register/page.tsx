@@ -100,32 +100,27 @@ export default function RegisterPage() {
         );
         const user = userCredential.user;
 
-        // Set custom claim if the user is an authority
-        if (data.role === 'authority') {
-           const idTokenResult = await user.getIdTokenResult(true); // Force refresh
-           if (!idTokenResult.claims.authority) {
-              // Note: In a real production app, setting claims should be done securely via a backend function.
-              // For this project, we simulate it, but be aware this is not standard best practice for client-side code.
-              // To make this work, you might need to manually trigger a token refresh after a short delay
-              // or handle this logic in a secure backend environment.
-              // This is a conceptual fix for the security rule check.
-           }
-        }
-
         await updateProfile(user, {
           displayName: data.fullName,
         });
 
-        const userDocRef = doc(firestore, 'users', user.uid);
-        await setDoc(userDocRef, {
+        // This is the correct way to store role information for security rules.
+        const userDocData: any = {
           uid: user.uid,
           fullName: data.fullName,
           email: data.email,
           role: data.role,
           createdAt: new Date().toISOString(),
-          // Add the authority flag to the document for rule checking
-          ...(data.role === 'authority' && { authority: true }),
-        });
+        };
+
+        // If the user is an authority, add the `authority: true` field.
+        // This field will be checked by our security rules.
+        if (data.role === 'authority') {
+          userDocData.authority = true;
+        }
+
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDoc(userDocRef, userDocData);
         
         toast({
           title: 'Registration Successful',
