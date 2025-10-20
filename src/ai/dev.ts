@@ -7,3 +7,4 @@ import '@/ai/flows/summarize-civic-issue-reports.ts';
 import '@/ai/flows/generate-civic-issue-report.ts';
 import '@/ai/flows/generate-image-fingerprint.ts';
 import '@/ai/flows/send-status-update-notification.ts';
+import '@/ai/flows/generate-location-name';
