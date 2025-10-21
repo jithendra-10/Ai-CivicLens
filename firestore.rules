@@ -2,61 +2,73 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
+    function isAuthority() {
+      // Allow if the requesting user's document has the role 'authority'
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
+    }
+
+    // Rules for the 'users' collection
     match /users/{userId} {
       function isOwner() {
         return request.auth.uid == userId;
       }
 
-      function isAuthority() {
-        // Allow if the requesting user's own document has the role 'authority'.
-        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
-      }
-
-      // A user can get their own profile, or an authority can get any profile.
+      // Allow users to read their own profile.
+      // Allow authorities to read anyone's profile.
       allow get: if isSignedIn() && (isOwner() || isAuthority());
+      allow list: if isSignedIn() && isAuthority();
 
-      // A user can only list their own document, which is not a common use case but is safe.
-      allow list: if isSignedIn() && isOwner();
+      // Users can only create their own user document.
+      allow create: if isOwner();
 
-      // A user can create their own profile document.
-      allow create: if isSignedIn() && isOwner();
-
-      // A user can only update or delete their own profile.
-      allow update, delete: if isSignedIn() && isOwner();
+      // Users can only update their own user document.
+      allow update: if isOwner();
+      
+      // Users cannot delete their profile for now.
+      allow delete: if false;
     }
 
+    // Rules for the 'reports' collection
     match /reports/{reportId} {
-        function isAuthority() {
-            return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'authority';
-        }
+      
+      function isOwnerOfReport() {
+        return request.auth.uid == resource.data.userId;
+      }
+      
+      // Allow authorities to read any report.
+      // Allow citizens to read their own reports.
+      allow get: if isSignedIn() && (isAuthority() || isOwnerOfReport());
+      allow list: if isSignedIn() && isAuthority();
 
-        function isOwner(report) {
-            return request.auth.uid == report.userId;
-        }
+      // Citizens can create reports.
+      // The new report's userId must match the creator's UID.
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
 
-        // Anyone can read reports.
-        allow get: if true;
-        // Authorities can list all reports, citizens can only list their own.
-        allow list: if isAuthority() || (isSignedIn() && request.query.where.field == 'userId' && request.query.where.value == request.auth.uid);
+      // Authorities can update any report (e.g., to change status).
+      // Citizens cannot update reports directly after creation.
+      allow update: if isSignedIn() && isAuthority();
 
-        // Signed-in users can create reports.
+      // Citizens can delete their own reports.
+      // Authorities can delete any report.
+      allow delete: if isSignedIn() && (isOwnerOfReport() || isAuthority());
+
+      // Rules for the 'duplicates' subcollection
+      match /duplicates/{duplicateId} {
+        // Any signed-in user can 'upvote' by creating a duplicate entry.
         allow create: if isSignedIn();
         
-        // Authorities can update any report. Citizens can only delete their own.
-        allow update: if isAuthority();
-        allow delete: if isSignedIn() && isOwner(resource.data);
-
-        match /duplicates/{duplicateId} {
-            // Allow creating a duplicate record if signed in.
-            allow create: if isSignedIn();
-            // Only authorities should be able to read/list who submitted duplicates.
-            allow read, list: if isAuthority();
-        }
+        // Only authorities should be able to list who submitted duplicates.
+        allow list, get: if isSignedIn() && isAuthority();
+        
+        // No one can update or delete duplicate entries directly.
+        allow update, delete: if false;
+      }
     }
   }
 }
