@@ -23,6 +23,7 @@ const SummarizeCivicIssuesInputSchema = z.object({
       }),
       status: z.string(),
       createdAt: z.string(),
+      upvoteCount: z.number(),
     })
   ).describe('An array of civic issue reports.'),
   query: z.string().describe('The user\'s question or prompt about the reports.'),
@@ -52,7 +53,7 @@ const summarizeCivicIssuesPrompt = ai.definePrompt({
 
   Report Data:
   {{#each reports}}
-  - Issue Type: {{{issueType}}}, Severity: {{{severity}}}, Status: {{{status}}}, Description: {{{aiDescription}}}, Location: (Lat: {{{location.lat}}}, Lng: {{{location.lng}}}), Created: {{{createdAt}}}
+  - Issue Type: {{{issueType}}}, Severity: {{{severity}}}, Status: {{{status}}}, Description: {{{aiDescription}}}, Location: (Lat: {{{location.lat}}}, Lng: {{{location.lng}}}), Created: {{{createdAt}}}, Upvotes: {{{upvoteCount}}}
   {{/each}}
 
   If the query is a greeting or not a question, respond politely. If asked for specific reports, list them clearly. If asked for a summary, provide a high-level overview.

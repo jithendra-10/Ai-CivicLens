@@ -50,6 +50,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
                     location: r.location,
                     status: r.status,
                     createdAt: r.createdAt,
+                    upvoteCount: r.upvoteCount || 0,
                 }));
                 
                 const result = await summarizeCivicIssues({ reports: relevantReports, query: currentQuery });
