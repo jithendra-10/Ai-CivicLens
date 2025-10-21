@@ -69,6 +69,7 @@ export function ConversationalAnalytics({ reports }: { reports: Report[] }) {
     };
     
     const suggestionPrompts = [
+        "What is the most upvoted issue?",
         "Are there any new high-severity reports?",
         "What's the most common issue type?",
         "List unresolved graffiti reports."

@@ -20,7 +20,7 @@ export interface User {
 
 export type Report = {
   id?: string;
-  reportId: string;
+  reportId?: string;
   userId: string;
   userFullName: string;
   imageUrl: string;
